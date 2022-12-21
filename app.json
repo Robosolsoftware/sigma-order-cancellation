@@ -1,0 +1,33 @@
+{
+  "id": "7597bb61-04b5-46dd-80f5-7d812ac0c2c8",
+  "name": "Robosol Order Cancellation",
+  "publisher": "Robosol",
+  "version": "1.0.0.0",
+  "brief": "",
+  "description": "",
+  "privacyStatement": "",
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [
+  ],
+  "screenshots": [],
+  "platform": "1.0.0.0",
+  "application": "21.0.0.0",
+  
+  "idRanges": [
+    {
+      "from": 70700,
+      "to": 70749
+    }
+  ],
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": true
+  },
+  "runtime": "8.0"
+  
+  
+}
