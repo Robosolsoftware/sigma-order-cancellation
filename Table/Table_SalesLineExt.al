@@ -24,9 +24,9 @@ tableextension 70701 SalesLineExt1 extends "Sales Line"
         {
             trigger OnAfterValidate()
             begin
-                if Rec.Type = Rec.Type::Item then begin
+                if (Rec.Type = Rec.Type::Item) and (rec."No." <> '') and (rec.Quantity <> xRec.Quantity) then begin
                     Rec."Original Order Quantity" := Rec.Quantity;
-                    Rec.Modify();
+                    //Rec.Modify(); Commented by Chris 09/01/23
                 end;
             end;
         }
