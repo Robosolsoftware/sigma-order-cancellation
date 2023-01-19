@@ -26,7 +26,6 @@ tableextension 70701 SalesLineExt1 extends "Sales Line"
             begin
                 if (Rec.Type = Rec.Type::Item) and (rec."No." <> '') and (rec.Quantity <> xRec.Quantity) then begin
                     Rec."Original Order Quantity" := Rec.Quantity;
-                    //Rec.Modify(); Commented by Chris 09/01/23
                 end;
             end;
         }

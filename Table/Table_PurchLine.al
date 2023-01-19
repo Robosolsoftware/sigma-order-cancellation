@@ -29,7 +29,6 @@ tableextension 70704 PurchLine extends "Purchase Line"
             begin
                 if Rec.Type = Rec.Type::Item then begin
                     Rec."Original Order Quantity" := Rec.Quantity;
-                    Rec.Modify();
                 end;
             end;
         }
