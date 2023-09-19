@@ -13,9 +13,9 @@
             "enableLongRunningSqlStatements": true,
             "enableSqlInformationDebugger": true,
             "environmentType": "Sandbox",
-            "environmentName": "Robo_Dev",
+            "environmentName": "Prod_Copy140823",
             "tenant": "1cf41952-b687-4c56-8f2b-96e0a300c5c7",
-            "schemaUpdateMode": "ForceSync" 
+            //"schemaUpdateMode": "ForceSync" 
         }
     ]
 }

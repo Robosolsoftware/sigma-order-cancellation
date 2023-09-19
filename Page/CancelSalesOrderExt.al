@@ -39,7 +39,7 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
         {
             Editable = VarPageEditFlag;
         }
-        
+
 
     }
 
@@ -47,7 +47,6 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
     {
         addafter(Release)
         {
-
             action("Cancel Order")
             {
 
