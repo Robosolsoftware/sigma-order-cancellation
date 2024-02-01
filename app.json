@@ -11,6 +11,12 @@
   "url": "",
   "logo": "",
   "dependencies": [
+    {
+      "id": "89b2d3ff-cff9-4506-9a14-597a5b6d370f",
+      "name": "Interim WMS BC Customisation",
+      "publisher": "Robosol",
+      "version": "1.0.0.2"
+    }
   ],
   "screenshots": [],
   "platform": "1.0.0.0",
@@ -27,7 +33,7 @@
     "allowDownloadingSource": true,
     "includeSourceInSymbolFile": true
   },
-  "runtime": "8.0"
+  "runtime": "11.0"
   
   
 }

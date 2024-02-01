@@ -23,6 +23,11 @@ tableextension 70704 PurchLine extends "Purchase Line"
         {
             DataClassification = ToBeClassified;
         }
+        field(70704; "Cancel Reason code"; Code[20])
+        {
+            TableRelation = "Return Reason";
+            Caption = 'Cancel Reason Code';
+        }
         modify(Quantity)
         {
             trigger OnAfterValidate()

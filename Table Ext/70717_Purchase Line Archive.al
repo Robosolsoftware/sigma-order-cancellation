@@ -1,7 +1,8 @@
-tableextension 70705 PurchH extends "Purchase Header"
+tableextension 70717 "ROC Purchase Line Archive" extends "Purchase Line Archive"
 {
     fields
     {
+        // Add changes to table fields here
         field(70700; "PO Cancelled"; Boolean)
         {
             DataClassification = ToBeClassified;
@@ -17,7 +18,24 @@ tableextension 70705 PurchH extends "Purchase Header"
             DataClassification = ToBeClassified;
             Editable = false;
         }
+        field(70703; "Original Order Quantity"; Decimal)
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(70704; "Cancel Reason code"; Code[20])
+        {
+            TableRelation = "Return Reason";
+        }
+    }
 
+    keys
+    {
+        // Add changes to keys here
+    }
+
+    fieldgroups
+    {
+        // Add changes to field groups here
     }
 
     var

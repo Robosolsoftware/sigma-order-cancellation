@@ -1,4 +1,4 @@
-tableextension 70701 SalesLineExt1 extends "Sales Line"
+tableextension 70715 "ROC Sales Line Archive " extends "Sales Line Archive"
 {
     fields
     {
@@ -19,17 +19,20 @@ tableextension 70701 SalesLineExt1 extends "Sales Line"
         {
             DataClassification = ToBeClassified;
         }
-        //Cancel Order --
-        modify(Quantity)
+        field(70704; "Cancel Reason code"; Code[20])
         {
-            trigger OnAfterValidate()
-            begin
-                if (Rec.Type = Rec.Type::Item) and (rec."No." <> '') and (rec.Quantity <> xRec.Quantity) then begin
-                    Rec."Original Order Quantity" := Rec.Quantity;
-                end;
-            end;
+            TableRelation = "Return Reason";
         }
+    }
 
+    keys
+    {
+        // Add changes to keys here
+    }
+
+    fieldgroups
+    {
+        // Add changes to field groups here
     }
 
     var

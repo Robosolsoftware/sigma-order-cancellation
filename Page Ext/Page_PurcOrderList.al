@@ -57,7 +57,6 @@ pageextension 70705 POLists extends "Purchase Order List"
     end;
 
     var
-        [InDataSet]
         VisibleonCancel: Boolean;
         PurNPay: Record "Purchases & Payables Setup";
 
