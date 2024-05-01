@@ -124,33 +124,26 @@ pageextension 70703 CancelPO extends "Purchase Order"
                             ReleaseDoc.PerformManualReopen(Rec);
                         Rec.TestField(Status, Rec.Status::Open);
 
-                        //Check Cancel Reason++
-                        RecPurchaseLine.Reset();
-                        RecPurchaseLine.SetRange("Document Type", Rec."Document Type");
-                        RecPurchaseLine.SetRange("Document No.", Rec."No.");
-                        RecPurchaseLine.SetFilter(Type, '%1|%2', RecPurchaseLine.Type::Item, RecPurchaseLine.Type::"G/L Account");
-                        RecPurchaseLine.SetRange("PO Cancelled", false);
-                        RecPurchaseLine.SetFilter("Cancel Reason code", '%1', '');
-                        if RecPurchaseLine.FindFirst() then
-                            Error('Please Select Cancel Reason Code for Item No:%1 Line No:%2', RecPurchaseLine."No.", RecPurchaseLine."Line No.");
 
-
-                        Clear(L_PurchLine);
+                        //Start Process++
                         L_PurchLine.Reset();
                         L_PurchLine.SetRange("Document Type", Rec."Document Type");
                         L_PurchLine.SetRange("Document No.", Rec."No.");
-                        L_PurchLine.SetRange(Type, L_PurchLine.Type::Item);
+                        L_PurchLine.SetFilter(Type, '%1|%2', L_PurchLine.Type::Item, L_PurchLine.Type::"G/L Account");
                         L_PurchLine.SetRange("PO Cancelled", false);
-                        if L_PurchLine.FindSet() then
+                        if L_PurchLine.FindSet() then begin
                             repeat
+                                //Check Cancel Reason++
+                                if L_PurchLine."Cancel Reason code" = '' then
+                                    Error('Please Select Cancel Reason Code for Item No:%1 Line No:%2', L_PurchLine."No.", L_PurchLine."Line No.");
+
                                 //Check if warehouse Receipt line exist++
                                 WhseRcptLine.Reset();
                                 WhseRcptLine.SETRANGE("Source Document", WhseRcptLine."Source Document"::"Purchase Order");
                                 WhseRcptLine.SetRange("Source No.", L_PurchLine."Document No.");
                                 WhseRcptLine.SetRange("Source Line No.", L_PurchLine."Line No.");
                                 if WhseRcptLine.FindFirst() then
-                                    Error('Unable to process ... Warehouse Receipt %1 exist for Order No.: %2 Line No.: %3', WhseRcptLine."No.", WhseRcptLine."Source No.", WhseRcptLine."Source Line No.");
-
+                                    Error('Unable to process ... Warehouse Receipt No. %1 exist for Order No.: %2 Line No.: %3', WhseRcptLine."No.", WhseRcptLine."Source No.", WhseRcptLine."Source Line No.");
 
                                 //Check Put Away Available++
                                 TakeWhseActvityLine.Reset();
@@ -159,22 +152,11 @@ pageextension 70703 CancelPO extends "Purchase Order"
                                 TakeWhseActvityLine.SetRange("Source Line No.", L_PurchLine."Line No.");
                                 TakeWhseActvityLine.SetRange("Activity Type", TakeWhseActvityLine."Activity Type"::"Put-away");
                                 if TakeWhseActvityLine.FindFirst() then
-                                    Error('Warehouse putaway no. %1 exists: in Purchase Line Document Type= %2,Document No.= %3,Line No.=%4', TakeWhseActvityLine."No.", L_PurchLine."Document Type", L_PurchLine."Document No.", L_PurchLine."Line No.");
-                            until L_PurchLine.Next() = 0;
+                                    Error('Unable to process ... Warehouse putaway No. %1 exists: in Purchase Line Document Type= %2,Document No.= %3,Line No.=%4', TakeWhseActvityLine."No.", L_PurchLine."Document Type", L_PurchLine."Document No.", L_PurchLine."Line No.");
 
-                        //Update Qty on Purchase Line+++
-                        Canceled := false;
-                        L_PurchLine.Reset();
-                        L_PurchLine.SetRange("Document Type", Rec."Document Type");
-                        L_PurchLine.SetRange("Document No.", Rec."No.");
-                        //L_PurchLine.SetRange(Type, L_PurchLine.Type::Item);
-                        L_PurchLine.SetRange("PO Cancelled", false);
-                        if L_PurchLine.FindSet() then begin
-                            repeat
                                 //Check Invoice Quantity++   
-                                if L_PurchLine."Qty. Rcd. Not Invoiced" > 0 then begin
+                                if L_PurchLine."Qty. Rcd. Not Invoiced" > 0 then
                                     Error('Total %1 quantity received but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_PurchLine."Quantity Received", L_PurchLine."Quantity Invoiced", L_PurchLine."Document No.", L_PurchLine."Line No.");
-                                end;
 
                                 if L_PurchLine.Type = L_PurchLine.Type::Item then begin
                                     //Delete Reservation++
@@ -187,13 +169,9 @@ pageextension 70703 CancelPO extends "Purchase Order"
                                     OriginalQty := L_PurchLine.Quantity;
                                     OriginalUnitCost := L_PurchLine."Unit Cost";
 
-
                                     L_PurchLine.Validate(Quantity, L_PurchLine."Quantity Received");
-                                    if L_PurchLine."PO Cancelled" = false then begin
-                                        L_PurchLine.Validate("Original Order Quantity", OriginalQty);
-                                        L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
-                                    End;
-                                    //L_PurchLine.Validate("Cancel Reason code", L_PurchLine."Cancel Reason code");
+                                    L_PurchLine.Validate("Original Order Quantity", OriginalQty);
+                                    L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
                                     if VariantCOde <> '' then begin
                                         L_PurchLine."Variant Code" := VariantCOde;
                                         L_PurchLine.Validate("Variant Code");
@@ -212,11 +190,8 @@ pageextension 70703 CancelPO extends "Purchase Order"
                                         OriginalUnitCost := L_PurchLine."Unit Cost";
 
                                         L_PurchLine.Validate(Quantity, L_PurchLine."Quantity Received");
-                                        if L_PurchLine."PO Cancelled" = false then begin
-                                            L_PurchLine.Validate("Original Order Quantity", OriginalQty);
-                                            L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
-                                        End;
-                                        //L_PurchLine.Validate("Cancel Reason code", L_PurchLine."Cancel Reason code");
+                                        L_PurchLine.Validate("Original Order Quantity", OriginalQty);
+                                        L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
 
                                         L_PurchLine."PO Cancelled" := true;
                                         L_PurchLine."PO Cancelled By" := UserId;
@@ -227,226 +202,28 @@ pageextension 70703 CancelPO extends "Purchase Order"
                             until L_PurchLine.Next() = 0;
                         end;
 
-                        if L_PurchaseHeader.Get(Rec."Document Type", Rec."No.") then begin
-                            L_PurchaseHeader."PO Cancelled" := true;
-                            L_PurchaseHeader."PO Cancelled By" := UserId;
-                            L_PurchaseHeader."PO Cancellation Date" := Today;
-                            L_PurchaseHeader.Modify();
+                        //Update Header++
+                        L_PurchLine.Reset();
+                        L_PurchLine.SetRange("Document Type", Rec."Document Type");
+                        L_PurchLine.SetRange("Document No.", Rec."No.");
+                        L_PurchLine.SetFilter(Type, '%1|%2', L_PurchLine.Type::Item, L_PurchLine.Type::"G/L Account");
+                        L_PurchLine.SetRange("PO Cancelled", false);
+                        if not L_PurchLine.FindFirst() then begin
+                            if L_PurchaseHeader.Get(Rec."Document Type", Rec."No.") then begin
+                                L_PurchaseHeader."PO Cancelled" := true;
+                                L_PurchaseHeader."PO Cancelled By" := UserId;
+                                L_PurchaseHeader."PO Cancellation Date" := Today;
+                                L_PurchaseHeader.Modify();
 
-                            //ReleaseDoc.PerformManualRelease(L_PurchaseHeader);
+                                //ReleaseDoc.PerformManualRelease(L_PurchaseHeader);
 
-                            // //Send Canceled Order to Archive++
-                            // ArchiveManagement.StorePurchDocument(L_PurchaseHeader, false); //Send Canceled Order to Archive++
+                                // //Send Canceled Order to Archive++
+                                // ArchiveManagement.StorePurchDocument(L_PurchaseHeader, false); //Send Canceled Order to Archive++
 
-                            //Delete Order++
-                            DeletePO(L_PurchaseHeader);
-
-                            Message('Purchase order is Cancelled');
+                                //Delete Order++
+                                DeletePO(L_PurchaseHeader);
+                            end;
                         end;
-
-                        // //Check Warehouse Receipt and Delete++
-                        // Clear(L_ReceiptNo);
-                        // WhseRcptLine.Reset();
-                        // WhseRcptLine.SETRANGE("Source Document", WhseRcptLine."Source Document"::"Purchase Order");
-                        // WhseRcptLine.SetRange("Source No.", Rec."No.");
-                        // WhseRcptLine.SetCurrentKey("No.");
-                        // WhseRcptLine.Ascending(true);
-                        // if WhseRcptLine.FindSet() then begin
-                        //     repeat
-                        //         //Delete Line for seleceted PO+++
-                        //         WhseRcptLine."Request For Cancel" := true;
-                        //         WhseRcptLine.Modify();
-                        //         WhseRcptLine.Delete(true);
-
-                        //         //Get Receipt No for delete header++
-                        //         if L_ReceiptNo <> '' then begin
-                        //             if L_ReceiptNo <> WhseRcptLine."No." then
-                        //                 L_ReceiptNo := L_ReceiptNo + '|' + WhseRcptLine."No.";
-
-                        //         end else
-                        //             L_ReceiptNo := WhseRcptLine."No.";
-
-                        //     until WhseRcptLine.Next() = 0;
-
-
-                        //     //Delete Header if line is empty++
-                        //     WhseRcptHeader.Reset();
-                        //     WhseRcptHeader.SetFilter("No.", L_ReceiptNo);
-                        //     if WhseRcptHeader.FindSet() then
-                        //         repeat
-                        //             L_CountWhseRcptLine.Reset();
-                        //             L_CountWhseRcptLine.SetRange("No.", WhseRcptHeader."No.");
-                        //             if L_CountWhseRcptLine.IsEmpty then
-                        //                 WhseRcptHeader.Delete(true);
-                        //         until WhseRcptHeader.Next() = 0;
-
-
-                        //     //Check Invoice++
-                        //     L_PurchLine.Reset();
-                        //     L_PurchLine.SetRange("Document Type", Rec."Document Type");
-                        //     L_PurchLine.SetRange("Document No.", Rec."No.");
-                        //     //L_PurchLine.SetRange(Type, L_PurchLine.Type::Item);
-                        //     L_PurchLine.SetRange("PO Cancelled", false);
-                        //     if L_PurchLine.FindSet() then begin
-                        //         repeat
-                        //             if L_PurchLine."Qty. Rcd. Not Invoiced" > 0 then begin
-                        //                 Error('Total %1 quantity received but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_PurchLine."Quantity Received", L_PurchLine."Quantity Invoiced", L_PurchLine."Document No.", L_PurchLine."Line No.");
-                        //             end;
-                        //         until L_PurchLine.Next() = 0;
-                        //     end;
-
-                        //     //Update Qty on Purchase Line+++
-                        //     Canceled := false;
-                        //     L_PurchLine.Reset();
-                        //     L_PurchLine.SetRange("Document Type", Rec."Document Type"::Order);
-                        //     L_PurchLine.SetRange("Document No.", Rec."No.");
-                        //     //L_PurchLine.SetRange(Type, L_PurchLine.Type::Item);
-                        //     L_PurchLine.SetRange("PO Cancelled", false);
-                        //     if L_PurchLine.FindSet() then begin
-                        //         repeat
-                        //             if L_PurchLine.Type = L_PurchLine.Type::Item then begin
-                        //                 //Delete Reservation++
-                        //                 DeleteReservationEntries(L_PurchLine);
-
-                        //                 Clear(VariantCOde);
-                        //                 Clear(OriginalQty);
-                        //                 Clear(OriginalUnitCost);
-                        //                 VariantCOde := L_PurchLine."Variant Code";
-                        //                 OriginalQty := L_PurchLine.Quantity;
-                        //                 OriginalUnitCost := L_PurchLine."Unit Cost";
-
-
-                        //                 L_PurchLine.Validate(Quantity, L_PurchLine."Quantity Received");
-                        //                 if L_PurchLine."PO Cancelled" = false then begin
-                        //                     L_PurchLine.Validate("Original Order Quantity", OriginalQty);
-                        //                     L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
-                        //                 End;
-                        //                 //L_PurchLine.Validate("Cancel Reason code", L_PurchLine."Cancel Reason code");
-                        //                 if VariantCOde <> '' then begin
-                        //                     L_PurchLine."Variant Code" := VariantCOde;
-                        //                     L_PurchLine.Validate("Variant Code");
-                        //                 end;
-
-                        //                 L_PurchLine."PO Cancelled" := true;
-                        //                 L_PurchLine."PO Cancelled By" := UserId;
-                        //                 L_PurchLine."PO Cancellation Date" := Today;
-                        //                 L_PurchLine.Modify();
-                        //                 Canceled := true;
-                        //             end else
-                        //                 if L_PurchLine.Type = L_PurchLine.Type::"G/L Account" then begin
-                        //                     Clear(OriginalQty);
-                        //                     Clear(OriginalUnitCost);
-                        //                     OriginalQty := L_PurchLine.Quantity;
-                        //                     OriginalUnitCost := L_PurchLine."Unit Cost";
-
-                        //                     L_PurchLine.Validate(Quantity, L_PurchLine."Quantity Received");
-                        //                     if L_PurchLine."PO Cancelled" = false then begin
-                        //                         L_PurchLine.Validate("Original Order Quantity", OriginalQty);
-                        //                         L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
-                        //                     End;
-                        //                     //L_PurchLine.Validate("Cancel Reason code", L_PurchLine."Cancel Reason code");
-
-                        //                     L_PurchLine."PO Cancelled" := true;
-                        //                     L_PurchLine."PO Cancelled By" := UserId;
-                        //                     L_PurchLine."PO Cancellation Date" := Today;
-                        //                     L_PurchLine.Modify();
-                        //                     Canceled := true;
-                        //                 end;
-                        //         until L_PurchLine.Next() = 0;
-
-                        //         if L_PurchaseHeader.Get(Rec."Document Type", Rec."No.") then begin
-                        //             L_PurchaseHeader."PO Cancelled" := true;
-                        //             L_PurchaseHeader."PO Cancelled By" := UserId;
-                        //             L_PurchaseHeader."PO Cancellation Date" := Today;
-                        //             L_PurchaseHeader.Modify();
-
-                        //             //ReleaseDoc.PerformManualRelease(L_PurchaseHeader);
-
-                        //             //Send Canceled Order to Archive++
-                        //             ArchiveManagement.StorePurchDocument(L_PurchaseHeader, false); //Send Canceled Order to Archive++
-
-                        //             //Delete Order++
-                        //             DeletePO(L_PurchaseHeader);
-
-                        //             Message('Purchase order is Cancelled');
-                        //         end;
-                        //     end;
-                        // end else begin
-                        //     //Update Qty on Purchase Line+++
-                        //     L_PurchLine.Reset();
-                        //     L_PurchLine.SetRange("Document Type", L_PurchLine."Document Type"::Order);
-                        //     L_PurchLine.SetRange("Document No.", Rec."No.");
-                        //     //L_PurchLine.SetRange(Type, L_PurchLine.Type::Item);
-                        //     L_PurchLine.SetRange("PO Cancelled", false);
-                        //     if L_PurchLine.FindSet() then begin
-                        //         repeat
-                        //             if L_PurchLine.Type = L_PurchLine.Type::Item then begin
-                        //                 //Delete Reservation++
-                        //                 DeleteReservationEntries(L_PurchLine);
-
-                        //                 Clear(VariantCOde);
-                        //                 Clear(OriginalQty);
-                        //                 Clear(OriginalUnitCost);
-                        //                 VariantCOde := L_PurchLine."Variant Code";
-                        //                 OriginalQty := L_PurchLine.Quantity;
-                        //                 OriginalUnitCost := L_PurchLine."Unit Cost";
-
-                        //                 L_PurchLine.Validate(Quantity, L_PurchLine."Quantity Received");
-                        //                 if L_PurchLine."PO Cancelled" = false then begin
-                        //                     L_PurchLine.Validate("Original Order Quantity", OriginalQty);
-                        //                     L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
-                        //                 End;
-                        //                 //L_PurchLine.Validate("Cancel Reason code", L_PurchLine."Cancel Reason code");
-                        //                 if VariantCOde <> '' then begin
-                        //                     L_PurchLine."Variant Code" := VariantCOde;
-                        //                     L_PurchLine.Validate("Variant Code");
-                        //                 end;
-
-                        //                 L_PurchLine."PO Cancelled" := true;
-                        //                 L_PurchLine."PO Cancelled By" := UserId;
-                        //                 L_PurchLine."PO Cancellation Date" := Today;
-                        //                 L_PurchLine.Modify();
-                        //                 Canceled := true;
-                        //             end else
-                        //                 if L_PurchLine.Type = L_PurchLine.Type::"G/L Account" then begin
-                        //                     Clear(OriginalQty);
-                        //                     Clear(OriginalUnitCost);
-                        //                     OriginalQty := L_PurchLine.Quantity;
-                        //                     OriginalUnitCost := L_PurchLine."Unit Cost";
-
-                        //                     L_PurchLine.Validate(Quantity, L_PurchLine."Quantity Received");
-                        //                     if L_PurchLine."PO Cancelled" = false then begin
-                        //                         L_PurchLine.Validate("Original Order Quantity", OriginalQty);
-                        //                         L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
-                        //                     End;
-                        //                     //L_PurchLine.Validate("Cancel Reason code", L_PurchLine."Cancel Reason code");
-
-                        //                     L_PurchLine."PO Cancelled" := true;
-                        //                     L_PurchLine."PO Cancelled By" := UserId;
-                        //                     L_PurchLine."PO Cancellation Date" := Today;
-                        //                     L_PurchLine.Modify();
-                        //                     Canceled := true;
-                        //                 end;
-                        //         until L_PurchLine.Next() = 0;
-
-                        //         if L_PurchaseHeader.Get(Rec."Document Type", Rec."No.") then begin
-                        //             L_PurchaseHeader."PO Cancelled" := true;
-                        //             L_PurchaseHeader."PO Cancelled By" := UserId;
-                        //             L_PurchaseHeader."PO Cancellation Date" := Today;
-                        //             L_PurchaseHeader.Modify();
-
-                        //             //ReleaseDoc.PerformManualRelease(L_PurchaseHeader);
-
-                        //             //Send Canceled Order to Archive++
-                        //             ArchiveManagement.StorePurchDocument(L_PurchaseHeader, false); //Send Canceled Order to Archive++
-
-                        //             //Delete Order++
-                        //             DeletePO(L_PurchaseHeader);
-
-                        //             Message('Purchase order is Cancelled');
-                        //         end;
-                        //     end;
-                        // end;
                     end;
                 }
             }

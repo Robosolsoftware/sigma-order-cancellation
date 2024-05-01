@@ -2,6 +2,7 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
 {
     layout
     {
+
         modify(Quantity)
         {
             Editable = not Rec.Cancelled = true;
@@ -80,7 +81,7 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
             {
                 Caption = 'Cancel Sales Order';
                 Visible = VisibleonCancel;
-                action("Cancel Order")
+                action("Cancel Line")
                 {
                     ToolTip = 'Cancel the selected row';
                     Image = Cancel;
@@ -96,6 +97,7 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                         VariantCOde: Code[20];
                         OriginalQty: Decimal;
                         OriginalUnitPrice: Decimal;
+                        L_WarehouseActivityHeader: Record "Warehouse Activity Header";
                     begin
                         //Check Setup++
                         SalesRecSet.Get();
@@ -104,7 +106,7 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                         end;
 
                         //Confimation Box++
-                        if not Confirm('Do you want to cancel this order?', false) then
+                        if not Confirm('Do you want to cancel selected line?', false) then
                             exit;
 
                         //Check Status++
@@ -119,27 +121,36 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
 
                         L_SalesLine.Reset();
                         CurrPage.SetSelectionFilter(L_SalesLine);
-                        //L_SalesLine.SetRange(Type, L_SalesLine.Type::Item);
+                        L_SalesLine.SetFilter(Type, '%1|%2', L_SalesLine.Type::Item, L_SalesLine.Type::"G/L Account");
                         L_SalesLine.SetRange(Cancelled, false);
                         if L_SalesLine.FindSet() then begin
                             repeat
+                                //Check Return Reason Code++
                                 if L_SalesLine."Cancel Reason code" = '' then
                                     Error('Please Select Cancel Reason Code for Line No: %1', L_SalesLine."Line No.");
 
 
-                                //Chcek Warehouse Shipment exists++
+                                //Chcek Warehouse Shipment exists +++
                                 WareShipLine.Reset();
                                 WareShipLine.SETRANGE("Source Document", WareShipLine."Source Document"::"Sales Order");
                                 WareShipLine.SetRange("Source No.", L_SalesLine."Document No.");
-                                WareShipLine.SetRange("Item No.", L_SalesLine."No.");
-                                if WareShipLine.FindFirst() then begin
+                                WareShipLine.SetRange("Source Line No.", L_SalesLine."Line No.");
+                                if WareShipLine.FindFirst() then
                                     Error('Unable to process ... Warehouse shipment %1 exist for Order No.: %2 Line No.: %3', WareShipLine."No.", WareShipLine."Source No.", WareShipLine."Source Line No.");
-                                end;
 
-                                //Check Invoice++
+                                //Check Inve Pick++
+                                L_WarehouseActivityHeader.Reset();
+                                L_WarehouseActivityHeader.SetRange(Type, L_WarehouseActivityHeader.Type::"Invt. Pick");
+                                L_WarehouseActivityHeader.SetRange("Source Document", L_WarehouseActivityHeader."Source Document"::"Sales Order");
+                                L_WarehouseActivityHeader.SetRange("Source No.", L_SalesLine."Document No.");
+                                if L_WarehouseActivityHeader.FindFirst() then
+                                    Error('Unable to process ... Inventory Pick %1 exist for Order No.: %2', L_WarehouseActivityHeader."No.", L_WarehouseActivityHeader."Source No.");
+
+                                //Check Invoice Pending++
                                 if L_SalesLine."Qty. Shipped Not Invoiced" > 0 then
                                     Error('Total %1 quantity shipped but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_SalesLine."Quantity Shipped", L_SalesLine."Quantity Invoiced", L_SalesLine."Document No.", L_SalesLine."Line No.");
 
+                                //Update Sales Line++
                                 if L_SalesLine.Type = L_SalesLine.Type::Item then begin
                                     //Delete Remaining Reservation Entries.
                                     DeleteReservationEntries(L_SalesLine);
@@ -152,11 +163,8 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                                     OriginalUnitPrice := L_SalesLine."Unit Price";
 
                                     L_SalesLine.Validate(Quantity, L_SalesLine."Quantity Shipped");
-                                    if L_SalesLine.Cancelled = false then begin
-                                        L_SalesLine.Validate("Original Order Quantity", OriginalQty);
-                                        L_SalesLine.Validate("Unit Price", OriginalUnitPrice);
-                                    End;
-                                    //L_SalesLine.Validate("Cancel Reason code", L_SalesLine."Cancel Reason code");
+                                    L_SalesLine.Validate("Original Order Quantity", OriginalQty);
+                                    L_SalesLine.Validate("Unit Price", OriginalUnitPrice);
                                     if VariantCOde <> '' then begin
                                         L_SalesLine."Variant Code" := VariantCOde;
                                         L_SalesLine.Validate("Variant Code");
@@ -174,11 +182,8 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                                         OriginalUnitPrice := L_SalesLine."Unit Price";
 
                                         L_SalesLine.Validate(Quantity, L_SalesLine."Quantity Shipped");
-                                        if L_SalesLine.Cancelled = false then begin
-                                            L_SalesLine.Validate("Original Order Quantity", OriginalQty);
-                                            L_SalesLine.Validate("Unit Price", OriginalUnitPrice);
-                                        End;
-                                        //L_SalesLine.Validate("Cancel Reason code", L_SalesLine."Cancel Reason code");
+                                        L_SalesLine.Validate("Original Order Quantity", OriginalQty);
+                                        L_SalesLine.Validate("Unit Price", OriginalUnitPrice);
                                         L_SalesLine.Cancelled := true;
                                         L_SalesLine."Cancelled By" := UserId;
                                         L_SalesLine."Cancelled Date" := Today;
@@ -187,7 +192,7 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                                     end;
                             until L_SalesLine.Next() = 0;
                         end;
-                        Message('Sales order is cancelled');
+                        Message('Selected Lines are cancelled');
                     end;
                 }
             }

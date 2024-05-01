@@ -66,7 +66,7 @@ pageextension 70704 PurchSubExt extends "Purchase Order Subform"
             {
                 Caption = 'Cancel Purchase Order';
                 Visible = VisibleonCancel;
-                action("Cancel Order")
+                action("Cancel Line")
                 {
                     ToolTip = 'Cancel the selected row';
                     Image = Cancel;
@@ -94,7 +94,7 @@ pageextension 70704 PurchSubExt extends "Purchase Order Subform"
                             Error('Enable Cancel Purchase order feature on Purchase & Payables setup to unlock this feature');
 
                         //Confimation Box++
-                        if not Confirm('Do you want to cancel this order?', false) then
+                        if not Confirm('Do you want to cancel selected line?', false) then
                             exit;
 
                         //Check Status++
@@ -109,72 +109,37 @@ pageextension 70704 PurchSubExt extends "Purchase Order Subform"
 
                         L_PurchLine.Reset();
                         CurrPage.SetSelectionFilter(L_PurchLine);
+                        L_PurchLine.SetFilter(Type, '%1|%2', L_PurchLine.Type::Item, L_PurchLine.Type::"G/L Account");
                         L_PurchLine.SetRange("PO Cancelled", false);
                         if L_PurchLine.FindSet() then begin
                             repeat
                                 //Check Reason Code++
                                 if L_PurchLine."Cancel Reason code" = '' then
-                                    Error('Please Select Cancel Reason Code for Product: %1', L_PurchLine."No.");
+                                    Error('Please Select Cancel Reason Code for Item No:%1 Line No:%2', L_PurchLine."No.", L_PurchLine."Line No.");
 
+                                //Check if warehouse Receipt line exist++
+                                WhseRcptLine.Reset();
+                                WhseRcptLine.SETRANGE("Source Document", WhseRcptLine."Source Document"::"Purchase Order");
+                                WhseRcptLine.SetRange("Source No.", L_PurchLine."Document No.");
+                                WhseRcptLine.SetRange("Source Line No.", L_PurchLine."Line No.");
+                                if WhseRcptLine.FindFirst() then
+                                    Error('Unable to process ... Warehouse Receipt %1 exist for Order No.: %2 Line No.: %3', WhseRcptLine."No.", WhseRcptLine."Source No.", WhseRcptLine."Source Line No.");
+
+                                //Check Put Away Available++
+                                TakeWhseActvityLine.Reset();
+                                TakeWhseActvityLine.SetRange("Source Document", TakeWhseActvityLine."Source Document"::"Purchase Order");
+                                TakeWhseActvityLine.SetRange("Source No.", L_PurchLine."Document No.");
+                                TakeWhseActvityLine.SetRange("Source Line No.", L_PurchLine."Line No.");
+                                TakeWhseActvityLine.SetRange("Activity Type", TakeWhseActvityLine."Activity Type"::"Put-away");
+                                if TakeWhseActvityLine.FindFirst() then
+                                    Error('Unable to process ... Warehouse putaway No. %1 exists: in Purchase Line Document Type= %2,Document No.= %3,Line No.=%4', TakeWhseActvityLine."No.", L_PurchLine."Document Type", L_PurchLine."Document No.", L_PurchLine."Line No.");
+
+                                //Check Invoice Quantity++
+                                if L_PurchLine."Qty. Rcd. Not Invoiced" > 0 then
+                                    Error('Total %1 quantity received but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_PurchLine."Quantity Received", L_PurchLine."Quantity Invoiced", L_PurchLine."Document No.", L_PurchLine."Line No.");
+
+                                //Update Purchase Line++
                                 if L_PurchLine.Type = L_PurchLine.Type::Item then begin
-                                    //Check if warehouse Receipt line exist++
-                                    WhseRcptLine.Reset();
-                                    WhseRcptLine.SETRANGE("Source Document", WhseRcptLine."Source Document"::"Purchase Order");
-                                    WhseRcptLine.SetRange("Source No.", L_PurchLine."Document No.");
-                                    WhseRcptLine.SetRange("Source Line No.", L_PurchLine."Line No.");
-                                    if WhseRcptLine.FindFirst() then
-                                        Error('Unable to process ... Warehouse Receipt %1 exist for Order No.: %2 Line No.: %3', WhseRcptLine."No.", WhseRcptLine."Source No.", WhseRcptLine."Source Line No.");
-
-                                    // //Check if warehouse Recipet line exist++
-                                    // WhseRcptLine.Reset();
-                                    // WhseRcptLine.SETRANGE("Source Document", WhseRcptLine."Source Document"::"Purchase Order");
-                                    // WhseRcptLine.SetRange("Source No.", L_PurchLine."Document No.");
-                                    // WhseRcptLine.SetRange("Source Line No.", L_PurchLine."Line No.");
-                                    // WhseRcptLine.SetCurrentKey("No.");
-                                    // WhseRcptLine.Ascending(true);
-                                    // if WhseRcptLine.FindSet() then begin
-                                    //     repeat
-                                    //         //Delete Line for seleceted PO+++
-                                    //         WhseRcptLine."Request For Cancel" := true;
-                                    //         WhseRcptLine.Modify();
-                                    //         WhseRcptLine.Delete(true);
-
-                                    //         //Get Receipt No for delete header++
-                                    //         if L_ReceiptNo <> '' then begin
-                                    //             if L_ReceiptNo <> WhseRcptLine."No." then
-                                    //                 L_ReceiptNo := L_ReceiptNo + '|' + WhseRcptLine."No.";
-
-                                    //         end else
-                                    //             L_ReceiptNo := WhseRcptLine."No.";
-                                    //     until WhseRcptLine.Next() = 0;
-
-                                    //     //Delete Header if line is empty++
-                                    //     WhseRcptHeader.Reset();
-                                    //     WhseRcptHeader.SetFilter("No.", L_ReceiptNo);
-                                    //     if WhseRcptHeader.FindSet() then
-                                    //         repeat
-                                    //             L_CountWhseRcptLine.Reset();
-                                    //             L_CountWhseRcptLine.SetRange("No.", WhseRcptHeader."No.");
-                                    //             if L_CountWhseRcptLine.IsEmpty then
-                                    //                 WhseRcptHeader.Delete(true);
-                                    //         until WhseRcptHeader.Next() = 0;
-                                    // end;
-
-                                    //Check Put Away Available++
-                                    TakeWhseActvityLine.Reset();
-                                    TakeWhseActvityLine.SetRange("Source Document", TakeWhseActvityLine."Source Document"::"Purchase Order");
-                                    TakeWhseActvityLine.SetRange("Source No.", L_PurchLine."Document No.");
-                                    TakeWhseActvityLine.SetRange("Source Line No.", L_PurchLine."Line No.");
-                                    TakeWhseActvityLine.SetRange("Activity Type", TakeWhseActvityLine."Activity Type"::"Put-away");
-                                    if TakeWhseActvityLine.FindFirst() then
-                                        Error('Warehouse putaway no. %1 exists: in Purchase Line Document Type= %2,Document No.= %3,Line No.=%4', TakeWhseActvityLine."No.", L_PurchLine."Document Type", L_PurchLine."Document No.", L_PurchLine."Line No.");
-
-
-                                    //Check Invoice Quantity++
-                                    if L_PurchLine."Qty. Rcd. Not Invoiced" > 0 then
-                                        Error('Total %1 quantity received but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_PurchLine."Quantity Received", L_PurchLine."Quantity Invoiced", L_PurchLine."Document No.", L_PurchLine."Line No.");
-
-
                                     //Delete Reservation++
                                     DeleteReservationEntries(L_PurchLine);
 
@@ -186,11 +151,8 @@ pageextension 70704 PurchSubExt extends "Purchase Order Subform"
                                     OriginalUnitCost := L_PurchLine."Unit Cost";
 
                                     L_PurchLine.Validate(Quantity, L_PurchLine."Quantity Received");
-                                    if L_PurchLine."PO Cancelled" = false then begin
-                                        L_PurchLine.Validate("Original Order Quantity", OriginalQty);
-                                        L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
-                                    End;
-                                    //L_PurchLine.Validate("Cancel Reason code", L_PurchLine."Cancel Reason code");
+                                    L_PurchLine.Validate("Original Order Quantity", OriginalQty);
+                                    L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
                                     if VariantCOde <> '' then begin
                                         L_PurchLine."Variant Code" := VariantCOde;
                                         L_PurchLine.Validate("Variant Code");
@@ -201,22 +163,14 @@ pageextension 70704 PurchSubExt extends "Purchase Order Subform"
                                     L_PurchLine.Modify();
                                 end else
                                     if L_PurchLine.Type = L_PurchLine.Type::"G/L Account" then begin
-
-                                        if L_PurchLine."Qty. Rcd. Not Invoiced" > 0 then begin
-                                            Error('Total %1 quantity received but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_PurchLine."Quantity Received", L_PurchLine."Quantity Invoiced", L_PurchLine."Document No.", L_PurchLine."Line No.");
-                                        end;
-
                                         Clear(OriginalQty);
                                         Clear(OriginalUnitCost);
                                         OriginalQty := L_PurchLine.Quantity;
                                         OriginalUnitCost := L_PurchLine."Unit Cost";
 
                                         L_PurchLine.Validate(Quantity, L_PurchLine."Quantity Received");
-                                        if L_PurchLine."PO Cancelled" = false then begin
-                                            L_PurchLine.Validate("Original Order Quantity", OriginalQty);
-                                            L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
-                                        End;
-                                        //L_PurchLine.Validate("Cancel Reason code", L_PurchLine."Cancel Reason code");
+                                        L_PurchLine.Validate("Original Order Quantity", OriginalQty);
+                                        L_PurchLine.Validate("Unit Cost", OriginalUnitCost);
 
                                         L_PurchLine."PO Cancelled" := true;
                                         L_PurchLine."PO Cancelled By" := UserId;
