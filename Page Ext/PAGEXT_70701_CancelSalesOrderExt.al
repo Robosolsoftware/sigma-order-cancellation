@@ -2,7 +2,6 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
 {
     layout
     {
-        // Add changes to page layout here
         addafter("Work Description")
         {
             field(Cancel; Rec.Cancel)
@@ -55,7 +54,6 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
         {
             Enabled = VarPageEditFlag;
         }
-
     }
 
     actions

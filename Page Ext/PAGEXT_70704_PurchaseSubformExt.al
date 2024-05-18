@@ -2,7 +2,6 @@ pageextension 70704 PurchSubExt extends "Purchase Order Subform"
 {
     layout
     {
-        // Add changes to page layout here
         addafter(Quantity)
         {
             field("Original Order Quantity"; Rec."Original Order Quantity")
@@ -28,7 +27,6 @@ pageextension 70704 PurchSubExt extends "Purchase Order Subform"
         {
             Editable = not Rec."PO Cancelled" = true;
         }
-
         addlast(Control1)
         {
             field("Cancel Reason code"; Rec."Cancel Reason code")

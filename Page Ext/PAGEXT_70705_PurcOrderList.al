@@ -2,7 +2,6 @@ pageextension 70705 POLists extends "Purchase Order List"
 {
     layout
     {
-        // Add changes to page layout here
         addafter("Location Code")
         {
             field("PO Cancelled"; Rec."PO Cancelled")
@@ -20,9 +19,7 @@ pageextension 70705 POLists extends "Purchase Order List"
                 ApplicationArea = all;
                 Visible = VisibleonCancel;
             }
-
         }
-
     }
 
     actions
@@ -59,5 +56,4 @@ pageextension 70705 POLists extends "Purchase Order List"
     var
         VisibleonCancel: Boolean;
         PurNPay: Record "Purchases & Payables Setup";
-
 }

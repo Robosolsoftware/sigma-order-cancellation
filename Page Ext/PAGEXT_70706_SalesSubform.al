@@ -2,7 +2,6 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
 {
     layout
     {
-
         modify(Quantity)
         {
             Editable = not Rec.Cancelled = true;
@@ -24,8 +23,6 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
         {
             Editable = not Rec.Cancelled = true;
         }
-
-        // Add changes to page layout here
         addafter(Quantity)
         {
             field("Original Order Quantity"; Rec."Original Order Quantity")
@@ -38,7 +35,6 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
         }
         addlast(Control1)
         {
-
             field("Cancel Reason code"; Rec."Cancel Reason code")
             {
                 Visible = VisibleOnCancel;
@@ -67,16 +63,13 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                 Editable = false;
                 Visible = VisibleOnCancel;
             }
-
         }
     }
 
     actions
     {
-        // Add changes to page actions here
         addafter("&Line")
         {
-
             group("Cancel Sales Order")
             {
                 Caption = 'Cancel Sales Order';
@@ -196,8 +189,6 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                     end;
                 }
             }
-
-
         }
     }
 
@@ -235,7 +226,6 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
         VarPageEditFlag: Boolean;
         VisibleOnCancel: Boolean;
         SalesRecSet: Record "Sales & Receivables Setup";
-        CancelledLine: Boolean;
 
     local procedure DeleteReservationEntries(_SalesLine: Record "Sales Line")
     var

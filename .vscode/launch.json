@@ -6,17 +6,17 @@
             "request": "launch",
             "type": "al",
             "environmentType": "Sandbox",
-            //"environmentName": "Sigma_Robosol",
+            //"environmentName": "Robosol_Dev",
             "environmentName": "Sigma_UAT",
             //"environmentName": "Sigma_KNAPP",
             "tenant": "55614040-8b3d-41a1-bae8-2140b06bd0c3",
-            "startupObjectId": 5768,
+            "startupObjectId": 22,
             "startupObjectType": "Page",
             "breakOnError": "All",
             "launchBrowser": true,
             "enableLongRunningSqlStatements": true,
             "enableSqlInformationDebugger": true,
-            "schemaUpdateMode": "ForceSync"
+            "schemaUpdateMode": "Synchronize"
         }
     ]
 }

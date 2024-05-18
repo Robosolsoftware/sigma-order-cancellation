@@ -1,10 +1,5 @@
 codeunit 70700 ValidationOnCancelOrder
 {
-    trigger OnRun()
-    begin
-
-    end;
-
     [EventSubscriber(ObjectType::Table, Database::"Warehouse Receipt Line", 'OnBeforeConfirmDelete', '', false, false)]
     local procedure OnBeforeConfirmDelete(var SkipConfirm: Boolean; var WarehouseReceiptLine: Record "Warehouse Receipt Line")
     begin
@@ -73,7 +68,4 @@ codeunit 70700 ValidationOnCancelOrder
     //         // Error('Purchase Order/Line cancelled. Modify not allowed');//Commented this line because it is causing issue when changing the global dimension
     //     end;
     // end;
-
-    var
-        myInt: Integer;
 }

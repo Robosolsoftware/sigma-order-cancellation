@@ -1,8 +1,7 @@
-tableextension 70717 "ROC Purchase Line Archive" extends "Purchase Line Archive"
+tableextension 70704 PurchLine extends "Purchase Line"
 {
     fields
     {
-        // Add changes to table fields here
         field(70700; "PO Cancelled"; Boolean)
         {
             DataClassification = ToBeClassified;
@@ -25,19 +24,16 @@ tableextension 70717 "ROC Purchase Line Archive" extends "Purchase Line Archive"
         field(70704; "Cancel Reason code"; Code[20])
         {
             TableRelation = "Return Reason";
+            Caption = 'Cancel Reason Code';
+        }
+        modify(Quantity)
+        {
+            trigger OnAfterValidate()
+            begin
+                if Rec.Type = Rec.Type::Item then begin
+                    Rec."Original Order Quantity" := Rec.Quantity;
+                end;
+            end;
         }
     }
-
-    keys
-    {
-        // Add changes to keys here
-    }
-
-    fieldgroups
-    {
-        // Add changes to field groups here
-    }
-
-    var
-        myInt: Integer;
 }

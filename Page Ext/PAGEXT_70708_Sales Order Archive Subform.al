@@ -1,11 +1,24 @@
-pageextension 70707 "ROC Sales Order Archive" extends "Sales Order Archive"
+pageextension 70708 "ROC SalesOrder Archive Subform" extends "Sales Order Archive Subform"
 {
     layout
     {
-        // Add changes to page layout here
-        addlast(General)
+        addafter(Quantity)
         {
-            field(Cancel; Rec.Cancel)
+            field("Original Order Quantity"; Rec."Original Order Quantity")
+            {
+                ApplicationArea = All;
+            }
+        }
+        addlast(Control1)
+        {
+            field("Cancel Reason code"; Rec."Cancel Reason code")
+            {
+                Caption = 'SO Cancelled';
+                ApplicationArea = All;
+                Editable = false;
+                Visible = VisibleOnCancel;
+            }
+            field(Cancelled; Rec.Cancelled)
             {
                 Caption = 'SO Cancelled';
                 ApplicationArea = All;
@@ -29,24 +42,17 @@ pageextension 70707 "ROC Sales Order Archive" extends "Sales Order Archive"
         }
     }
 
-    actions
-    {
-        // Add changes to page actions here
-    }
-
     var
-        myInt: Integer;
         VisibleOnCancel: Boolean;
         SalesRecSet: Record "Sales & Receivables Setup";
 
     trigger OnOpenPage()
     begin
-        Clear(VisibleOnCancel);
+        clear(VisibleOnCancel);
         SalesRecSet.Get();
         if not SalesRecSet."Cancel Sales Order Feature" then
             VisibleOnCancel := false
         else
             VisibleOnCancel := true;
-
     end;
 }

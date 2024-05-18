@@ -1,23 +1,18 @@
-tableextension 70704 PurchLine extends "Purchase Line"
+tableextension 70701 SalesLineExt1 extends "Sales Line"
 {
     fields
     {
-        // Add changes to table fields here
-
-        field(70700; "PO Cancelled"; Boolean)
+        field(70700; Cancelled; Boolean)
         {
             DataClassification = ToBeClassified;
-            Editable = false;
         }
-        field(70701; "PO Cancellation Date"; Date)
+        field(70701; "Cancelled By"; Code[100])
         {
             DataClassification = ToBeClassified;
-            Editable = false;
         }
-        field(70702; "PO Cancelled By"; Code[100])
+        field(70702; "Cancelled Date"; Date)
         {
             DataClassification = ToBeClassified;
-            Editable = false;
         }
         field(70703; "Original Order Quantity"; Decimal)
         {
@@ -26,19 +21,16 @@ tableextension 70704 PurchLine extends "Purchase Line"
         field(70704; "Cancel Reason code"; Code[20])
         {
             TableRelation = "Return Reason";
-            Caption = 'Cancel Reason Code';
         }
+        //Cancel Order --
         modify(Quantity)
         {
             trigger OnAfterValidate()
             begin
-                if Rec.Type = Rec.Type::Item then begin
+                if (Rec.Type = Rec.Type::Item) and (rec."No." <> '') and (rec.Quantity <> xRec.Quantity) then begin
                     Rec."Original Order Quantity" := Rec.Quantity;
                 end;
             end;
         }
     }
-
-    var
-        myInt: Integer;
 }

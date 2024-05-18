@@ -2,7 +2,6 @@ pageextension 70711 "ROC Sales Order List" extends "Sales Order List"
 {
     layout
     {
-        // Add changes to page layout here
         addafter(Status)
         {
             field(Cancel; Rec.Cancel)
@@ -14,13 +13,7 @@ pageextension 70711 "ROC Sales Order List" extends "Sales Order List"
         }
     }
 
-    actions
-    {
-        // Add changes to page actions here
-    }
-
     var
-        myInt: Integer;
         VisibleOnCancel: Boolean;
         SalesRecSet: Record "Sales & Receivables Setup";
 
@@ -32,6 +25,5 @@ pageextension 70711 "ROC Sales Order List" extends "Sales Order List"
             VisibleOnCancel := false
         else
             VisibleOnCancel := true;
-
     end;
 }

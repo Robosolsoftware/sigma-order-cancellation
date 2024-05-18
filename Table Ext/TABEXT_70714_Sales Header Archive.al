@@ -1,8 +1,7 @@
-tableextension 70702 SalesH extends "Sales Header"
+tableextension 70714 "ROC Sales Header Archive" extends "Sales Header Archive"
 {
     fields
     {
-        // Add changes to table fields here
         field(70700; Cancel; Boolean)
         {
             DataClassification = ToBeClassified;
@@ -15,12 +14,5 @@ tableextension 70702 SalesH extends "Sales Header"
         {
             DataClassification = ToBeClassified;
         }
-        field(70703; "Error exist"; Boolean)
-        {
-
-        }
     }
-
-    var
-        myInt: Integer;
 }

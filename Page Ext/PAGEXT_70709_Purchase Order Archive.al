@@ -1,22 +1,9 @@
-pageextension 70710 "ROC Purchase Archive Subform" extends "Purchase Order Archive Subform"
+pageextension 70709 "ROC Purchase Order Archive" extends "Purchase Order Archive"
 {
     layout
     {
-        // Add changes to page layout here
-        addafter(Quantity)
+        addlast(General)
         {
-            field("Original Order Quantity"; Rec."Original Order Quantity")
-            {
-                ApplicationArea = All;
-            }
-        }
-        addlast(Control1)
-        {
-            field("Cancel Reason code"; Rec."Cancel Reason code")
-            {
-                ApplicationArea = all;
-                Visible = VisibleonCancel;
-            }
             field("PO Cancelled"; Rec."PO Cancelled")
             {
                 ApplicationArea = all;
@@ -38,15 +25,10 @@ pageextension 70710 "ROC Purchase Archive Subform" extends "Purchase Order Archi
         }
     }
 
-    actions
-    {
-        // Add changes to page actions here
-    }
-
     var
-        myInt: Integer;
         VisibleonCancel: Boolean;
         PurchNPay: Record "Purchases & Payables Setup";
+
 
     trigger OnOpenPage()
     begin

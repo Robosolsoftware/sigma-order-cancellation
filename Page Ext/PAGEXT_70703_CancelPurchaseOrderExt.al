@@ -1,9 +1,7 @@
 pageextension 70703 CancelPO extends "Purchase Order"
 {
-
     layout
     {
-        // Add changes to page layout here
         modify(Prepayment)
         {
             Editable = VarPageEditFlag;
@@ -30,7 +28,6 @@ pageextension 70703 CancelPO extends "Purchase Order"
         }
         addlast(General)
         {
-
             field("PO Cancelled"; Rec."PO Cancelled")
             {
                 ApplicationArea = all;
@@ -49,16 +46,11 @@ pageextension 70703 CancelPO extends "Purchase Order"
                 Visible = VisibleonCancel;
                 Editable = false;
             }
-
-
-
         }
-
     }
 
     actions
     {
-
         modify(Release)
         {
             trigger OnAfterAction()

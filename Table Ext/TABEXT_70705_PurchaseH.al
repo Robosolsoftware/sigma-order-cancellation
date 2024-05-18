@@ -1,8 +1,7 @@
-tableextension 70716 "ROC Purchase Header Archive" extends "Purchase Header Archive"
+tableextension 70705 PurchH extends "Purchase Header"
 {
     fields
     {
-        // Add changes to table fields here
         field(70700; "PO Cancelled"; Boolean)
         {
             DataClassification = ToBeClassified;
@@ -18,18 +17,10 @@ tableextension 70716 "ROC Purchase Header Archive" extends "Purchase Header Arch
             DataClassification = ToBeClassified;
             Editable = false;
         }
+        field(70703; "Error exist"; Boolean)
+        {
+            DataClassification = ToBeClassified;
+            Editable = false;
+        }
     }
-
-    keys
-    {
-        // Add changes to keys here
-    }
-
-    fieldgroups
-    {
-        // Add changes to field groups here
-    }
-
-    var
-        myInt: Integer;
 }
