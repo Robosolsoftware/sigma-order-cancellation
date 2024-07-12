@@ -2,7 +2,7 @@
   "id": "7597bb61-04b5-46dd-80f5-7d812ac0c2c8",
   "name": "Robosol Order Cancellation",
   "publisher": "Robosol",
-  "version": "24.0.0.0",
+  "version": "24.0.0.1",
   "brief": "",
   "description": "",
   "privacyStatement": "",
@@ -15,7 +15,7 @@
       "id": "89b2d3ff-cff9-4506-9a14-597a5b6d370f",
       "name": "Interim WMS BC Customisation",
       "publisher": "Robosol",
-      "version": "24.0.0.1"
+      "version": "24.0.0.29"
     }
   ],
   "screenshots": [],

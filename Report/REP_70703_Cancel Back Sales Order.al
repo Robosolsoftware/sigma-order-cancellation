@@ -26,6 +26,7 @@ report 70703 "Cancel Back Sales Order"
                 Delete_SalesHeader: Record "Sales Header";
                 Text_Date: Text;
                 ReleaseDoc: Codeunit "Release Sales Document";
+                L_ErrorBuff: Record "Error Log";
             begin
                 //Prepare Sales Order to Cancel++
                 Clear(Text_Date);
@@ -41,11 +42,11 @@ report 70703 "Cancel Back Sales Order"
 
                         //Delete Error logs++
                         Clear(L_ErrorFound);
-                        G_ErrorBuff.Reset();
-                        G_ErrorBuff.SetRange("Document Type", L_SalesHeader."Document Type");
-                        G_ErrorBuff.SetRange("Document No.", L_SalesHeader."No.");
-                        if G_ErrorBuff.FindSet() then
-                            G_ErrorBuff.DeleteAll();
+                        L_ErrorBuff.Reset();
+                        L_ErrorBuff.SetRange("Document Type", L_SalesHeader."Document Type");
+                        L_ErrorBuff.SetRange("Document No.", L_SalesHeader."No.");
+                        if L_ErrorBuff.FindSet() then
+                            L_ErrorBuff.DeleteAll();
 
                         //For 1st Error++
                         if L_ErrorFound = false then begin
@@ -280,12 +281,22 @@ report 70703 "Cancel Back Sales Order"
     local procedure InsertErrorLogCanceledOrder(SalesHeader: Record "Sales Header"; ErrorText: Text)
     var
         L_SalesHeader: Record "Sales Header";
+        Last_ErrorLog: Record "Error Log";
     begin
+        Clear(G_ErrorBuff);
         G_ErrorBuff.Init();
-        if G_ErrorBuff.FindLast() then
-            G_ErrorBuff."Entry No." += 1
-        Else
+
+        Last_ErrorLog.Reset();
+        if Last_ErrorLog.FindLast() then
+            G_ErrorBuff."Entry No." := Last_ErrorLog."Entry No." + 1
+        else
             G_ErrorBuff."Entry No." := 1;
+
+        // if G_ErrorBuff.FindLast() then
+        //     G_ErrorBuff."Entry No." += 1
+        // Else
+        //     G_ErrorBuff."Entry No." := 1;
+
         G_ErrorBuff."Clearance Error" := ErrorText;
         G_ErrorBuff."Created Date" := Today;
         G_ErrorBuff."Document No." := SalesHeader."No.";
@@ -316,8 +327,10 @@ report 70703 "Cancel Back Sales Order"
 
     local procedure DeleteSalesHeader(L_SalesHeader: Record "Sales Header")
     begin
-        if L_SalesHeader.Cancel = true then
+        if L_SalesHeader.Cancel = true then begin
             L_SalesHeader.Delete(true);
+            Commit();
+        end;
     end;
 
 
@@ -327,4 +340,5 @@ report 70703 "Cancel Back Sales Order"
         EndDate: Date;
         G_ErrorBuff: Record "Error Log";
         ReturnReasonCode: Code[50];
+        tes: Report 299;
 }

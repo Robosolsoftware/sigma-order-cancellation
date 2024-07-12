@@ -7,6 +7,15 @@ codeunit 70700 ValidationOnCancelOrder
             SkipConfirm := true;
     end;
 
+
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"PostSales-Delete", 'OnBeforeDeleteHeader', '', false, false)]
+    local procedure OnlyForSO_OnBeforeDeleteHeader(var IsHandled: Boolean; var SalesHeader: Record "Sales Header")
+    begin
+        if SalesHeader."Document Type" = SalesHeader."Document Type"::Order then
+            IsHandled := true;
+    end;
+
     // [EventSubscriber(ObjectType::Table, Database::"Purchase Line", 'OnAfterInsertEvent', '', false, false)]
     // local procedure CheckPurchaseLineInsert(var Rec: Record "Purchase Line")
     // var
