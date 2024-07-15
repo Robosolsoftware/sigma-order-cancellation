@@ -6,7 +6,7 @@
             "request": "launch",
             "type": "al",
             "environmentType": "Sandbox",
-            "environmentName": "Copy_10072024",
+            "environmentName": "Copy_12072024",
             //"environmentName": "Sigma_UAT",
             //"environmentName": "Sigma_KNAPP",
             "tenant": "55614040-8b3d-41a1-bae8-2140b06bd0c3",
