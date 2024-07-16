@@ -5,6 +5,7 @@ page 70702 "Error Logs"
     PageType = List;
     SourceTable = "Error Log";
     UsageCategory = Administration;
+    Editable = false;
 
     layout
     {
