@@ -35,8 +35,9 @@ report 70703 "Cancel Back Sales Order"
                 L_SalesHeader.SetRange("Document Type", L_SalesHeader."Document Type"::Order);
                 L_SalesHeader.SetFilter("Shipment Date", '%1..%2', EndDate, CalcDate(Text_Date, WorkDate()));
                 L_SalesHeader.SetRange(Cancel, false);
-                L_SalesHeader.CalcFields("Drop/Special Order");
-                L_SalesHeader.SetRange("Drop/Special Order", false);
+                L_SalesHeader.CalcFields("Drop/Special Order", "Special Order");
+                L_SalesHeader.SetRange("Drop/Special Order", false); //Drop Shipment Order
+                L_SalesHeader.SetRange("Special Order", false); //Special Order
                 if L_SalesHeader.FindSet() then begin
                     repeat
                         Clear(L_ErrorFound);
