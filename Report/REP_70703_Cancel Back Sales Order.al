@@ -27,6 +27,8 @@ report 70703 "Cancel Back Sales Order"
                 Text_Date: Text;
                 ReleaseDoc: Codeunit "Release Sales Document";
                 L_ErrorBuff: Record "Error Log";
+                L_KnappOrderResponse: Record "Knapp Order Response";
+                L_ItemVariant: Record "Item Variant";
             begin
                 //Prepare Sales Order to Cancel++
                 Clear(Text_Date);
@@ -102,6 +104,42 @@ report 70703 "Cancel Back Sales Order"
                                 L_ErrorText := StrSubstNo('Total %1 quantity shipped but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_SalesLine."Quantity Shipped", L_SalesLine."Quantity Invoiced", L_SalesLine."Document No.", L_SalesLine."Line No.");
                                 InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
                                 L_ErrorFound := true;
+                            end;
+                        end;
+
+                        //If Knapp Order Response is Available then do not cancel/delete the Sales Order
+                        if L_ErrorFound = false then begin
+                            Clear(L_ErrorText);
+                            L_KnappOrderResponse.Reset();
+                            L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
+                            L_KnappOrderResponse.SetRange("Document No.", L_SalesHeader."No.");
+                            if L_KnappOrderResponse.FindFirst() then begin
+                                L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
+                                InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                L_ErrorFound := true;
+                            end;
+                        end;
+
+                        //If Variant is available on Sales Line but that variant is not there in Item Variant List then don't delete the Order.
+                        if L_ErrorFound = false then begin
+                            Clear(L_ErrorText);
+                            L_SalesLine.Reset();
+                            L_SalesLine.SetRange("Document Type", L_SalesHeader."Document Type"::Order);
+                            L_SalesLine.SetRange("Document No.", L_SalesHeader."No.");
+                            L_SalesLine.SetFilter(Type, '%1', L_SalesLine.Type::Item);
+                            L_SalesLine.SetFilter("Variant Code", '<>%1', '');
+                            L_SalesLine.SetRange(Cancelled, false);
+                            if L_SalesLine.FindSet() then begin
+                                repeat
+                                    L_ItemVariant.Reset();
+                                    L_ItemVariant.SetRange("Item No.", L_SalesLine."No.");
+                                    L_ItemVariant.SetFilter(Code, '%1', L_SalesLine."Variant Code");
+                                    if not L_ItemVariant.FindFirst() then begin
+                                        L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as Item %2 that has Variant %3 is not available in Item Variant.', L_SalesLine."Document No.", L_SalesLine."No.", L_SalesLine."Variant Code");
+                                        InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                        L_ErrorFound := true;
+                                    end;
+                                until L_SalesLine.Next() = 0;
                             end;
                         end;
 
@@ -338,10 +376,8 @@ report 70703 "Cancel Back Sales Order"
 
 
     var
-        myInt: Integer;
         StartDate: DateFormula;
         EndDate: Date;
         G_ErrorBuff: Record "Error Log";
         ReturnReasonCode: Code[50];
-        tes: Report 299;
 }

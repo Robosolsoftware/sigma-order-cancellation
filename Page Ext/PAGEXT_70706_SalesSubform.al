@@ -91,6 +91,8 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                         OriginalQty: Decimal;
                         OriginalUnitPrice: Decimal;
                         L_WarehouseActivityHeader: Record "Warehouse Activity Header";
+                        L_KnappOrderResponse: Record "Knapp Order Response";
+                        L_ItemVariant: Record "Item Variant";
                     begin
                         //Check Setup++
                         SalesRecSet.Get();
@@ -112,6 +114,13 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                             L_SalesHeader.TestField(Status, L_SalesHeader.Status::Open);
                         end;
 
+                        //If Knapp Order Response is Available then do not cancel/delete the Sales Order
+                        L_KnappOrderResponse.Reset();
+                        L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
+                        L_KnappOrderResponse.SetRange("Document No.", Rec."Document No.");
+                        if L_KnappOrderResponse.FindFirst() then
+                            Error(StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', Rec."Document No."));
+
                         L_SalesLine.Reset();
                         CurrPage.SetSelectionFilter(L_SalesLine);
                         L_SalesLine.SetFilter(Type, '%1|%2', L_SalesLine.Type::Item, L_SalesLine.Type::"G/L Account");
@@ -122,6 +131,14 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                                 if L_SalesLine."Cancel Reason code" = '' then
                                     Error('Please Select Cancel Reason Code for Line No: %1', L_SalesLine."Line No.");
 
+                                //If Variant is available on Sales Line but that variant is not there in Item Variant List then don't delete the Order.
+                                if L_SalesLine."Variant Code" <> '' then begin
+                                    L_ItemVariant.Reset();
+                                    L_ItemVariant.SetRange("Item No.", L_SalesLine."No.");
+                                    L_ItemVariant.SetFilter(Code, '%1', L_SalesLine."Variant Code");
+                                    if not L_ItemVariant.FindFirst() then
+                                        Error(StrSubstNo('Not able to Cancel/Delete Order %1 as Item %2 that has Variant %3 is not available in Item Variant.', L_SalesLine."Document No.", L_SalesLine."No.", L_SalesLine."Variant Code"));
+                                end;
 
                                 //Chcek Warehouse Shipment exists +++
                                 WareShipLine.Reset();

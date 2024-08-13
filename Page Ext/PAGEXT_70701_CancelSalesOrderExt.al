@@ -74,19 +74,15 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
                     var
                         L_SalesLine: Record "Sales Line";
                         WareShipLine: Record "Warehouse Shipment Line";
-                        WareShipHeader: Record "Warehouse Shipment Header";
                         ReleaseDoc: Codeunit "Release Sales Document";
-                        TakeWhseActvityLine: Record "Warehouse Activity Line";
-                        ReleaseWhseShptDoc: Codeunit "Whse.-Shipment Release";
-                        Canceled: Boolean;
                         ArchiveManagement: Codeunit ArchiveManagement;
                         VariantCOde: Code[20];
                         OriginalQty: Decimal;
                         L_SalesHeader: Record "Sales Header";
                         OriginalUnitPrice: Decimal;
-
-                        L_Location: Record Location;
                         L_WarehouseActivityHeader: Record "Warehouse Activity Header";
+                        L_KnappOrderResponse: Record "Knapp Order Response";
+                        L_ItemVariant: Record "Item Variant";
                     begin
                         //Check Setup++
                         SalesRecSet.Get();
@@ -103,6 +99,13 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
                             ReleaseDoc.PerformManualReopen(Rec);
                         Rec.TestField(Status, Rec.Status::Open);
 
+                        //If Knapp Order Response is Available then do not cancel/delete the Sales Order
+                        L_KnappOrderResponse.Reset();
+                        L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
+                        L_KnappOrderResponse.SetRange("Document No.", Rec."No.");
+                        if L_KnappOrderResponse.FindFirst() then
+                            Error(StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', Rec."No."));
+
                         //Start Process++
                         L_SalesLine.Reset();
                         L_SalesLine.SetRange("Document Type", Rec."Document Type");
@@ -114,6 +117,15 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
                                 //Check Return Reason Code++
                                 if L_SalesLine."Cancel Reason code" = '' then
                                     Error('Please Select Cancel Reason Code for Line No: %1', L_SalesLine."Line No.");
+
+                                //If Variant is available on Sales Line but that variant is not there in Item Variant List then don't delete the Order.
+                                if L_SalesLine."Variant Code" <> '' then begin
+                                    L_ItemVariant.Reset();
+                                    L_ItemVariant.SetRange("Item No.", L_SalesLine."No.");
+                                    L_ItemVariant.SetFilter(Code, '%1', L_SalesLine."Variant Code");
+                                    if not L_ItemVariant.FindFirst() then
+                                        Error(StrSubstNo('Not able to Cancel/Delete Order %1 as Item %2 that has Variant %3 is not available in Item Variant.', L_SalesLine."Document No.", L_SalesLine."No.", L_SalesLine."Variant Code"));
+                                end;
 
                                 //Chcek Warehouse Shipment exists +++
                                 WareShipLine.Reset();
@@ -158,7 +170,7 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
                                     L_SalesLine.Cancelled := true;
                                     L_SalesLine."Cancelled By" := UserId;
                                     L_SalesLine."Cancelled Date" := Today;
-                                    L_SalesLine."Completely Shipped" := true; //Prathamesh++
+                                    L_SalesLine."Completely Shipped" := true;
                                     L_SalesLine.Modify();
                                 end else
                                     if L_SalesLine.Type = L_SalesLine.Type::"G/L Account" then begin
@@ -173,7 +185,7 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
                                         L_SalesLine.Cancelled := true;
                                         L_SalesLine."Cancelled By" := UserId;
                                         L_SalesLine."Cancelled Date" := Today;
-                                        L_SalesLine."Completely Shipped" := true; //Prathamesh++
+                                        L_SalesLine."Completely Shipped" := true;
                                         L_SalesLine.Modify();
                                     end;
                             until L_SalesLine.Next() = 0;
@@ -192,7 +204,7 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
                                 L_SalesHeader."Cancelled Date" := Today;
                                 L_SalesHeader.Modify();
 
-                                //ReleaseDoc.PerformManualRelease(L_SalesHeader); //Prathamesh++
+                                //ReleaseDoc.PerformManualRelease(L_SalesHeader);
 
                                 // //Send Canceled Order to Archive++
                                 // ArchiveManagement.StoreSalesDocument(L_SalesHeader, false);
@@ -217,16 +229,15 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
             }
         }
     }
+
     trigger OnAfterGetCurrRecord()
     var
     begin
         Clear(VarPageEditFlag);
-
         if Rec.Cancel then
             VarPageEditFlag := false
         else
             VarPageEditFlag := true;
-
     end;
 
     trigger OnOpenPage()
@@ -237,13 +248,10 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
             VisibleOnCancel := false
         else
             VisibleOnCancel := true;
-
     end;
 
     var
-
-        VarPageEditFlag: Boolean;//Azhar
-
+        VarPageEditFlag: Boolean;
         VisibleOnCancel: Boolean;
         SalesRecSet: Record "Sales & Receivables Setup";
 
