@@ -93,6 +93,7 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                         L_WarehouseActivityHeader: Record "Warehouse Activity Header";
                         L_KnappOrderResponse: Record "Knapp Order Response";
                         L_ItemVariant: Record "Item Variant";
+                        L_SalesShipmentHeader: Record "Sales Shipment Header";
                     begin
                         //Check Setup++
                         SalesRecSet.Get();
@@ -115,11 +116,15 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
                         end;
 
                         //If Knapp Order Response is Available then do not cancel/delete the Sales Order
-                        L_KnappOrderResponse.Reset();
-                        L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
-                        L_KnappOrderResponse.SetRange("Document No.", Rec."Document No.");
-                        if L_KnappOrderResponse.FindFirst() then
-                            Error(StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', Rec."Document No."));
+                        L_SalesShipmentHeader.Reset();
+                        L_SalesShipmentHeader.SetRange("Order No.", Rec."Document No.");
+                        if not L_SalesShipmentHeader.FindFirst() then begin
+                            L_KnappOrderResponse.Reset();
+                            L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
+                            L_KnappOrderResponse.SetRange("Document No.", Rec."Document No.");
+                            if L_KnappOrderResponse.FindFirst() then
+                                Error(StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', Rec."Document No."));
+                        end;
 
                         L_SalesLine.Reset();
                         CurrPage.SetSelectionFilter(L_SalesLine);

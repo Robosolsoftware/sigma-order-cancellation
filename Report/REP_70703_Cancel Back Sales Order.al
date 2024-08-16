@@ -29,6 +29,7 @@ report 70703 "Cancel Back Sales Order"
                 L_ErrorBuff: Record "Error Log";
                 L_KnappOrderResponse: Record "Knapp Order Response";
                 L_ItemVariant: Record "Item Variant";
+                L_SalesShipmentHeader: Record "Sales Shipment Header";
             begin
                 //Prepare Sales Order to Cancel++
                 Clear(Text_Date);
@@ -110,13 +111,17 @@ report 70703 "Cancel Back Sales Order"
                         //If Knapp Order Response is Available then do not cancel/delete the Sales Order
                         if L_ErrorFound = false then begin
                             Clear(L_ErrorText);
-                            L_KnappOrderResponse.Reset();
-                            L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
-                            L_KnappOrderResponse.SetRange("Document No.", L_SalesHeader."No.");
-                            if L_KnappOrderResponse.FindFirst() then begin
-                                L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
-                                InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
-                                L_ErrorFound := true;
+                            L_SalesShipmentHeader.Reset();
+                            L_SalesShipmentHeader.SetRange("Order No.", L_SalesHeader."No.");
+                            if not L_SalesShipmentHeader.FindFirst() then begin
+                                L_KnappOrderResponse.Reset();
+                                L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
+                                L_KnappOrderResponse.SetRange("Document No.", L_SalesHeader."No.");
+                                if L_KnappOrderResponse.FindFirst() then begin
+                                    L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
+                                    InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                    L_ErrorFound := true;
+                                end;
                             end;
                         end;
 
