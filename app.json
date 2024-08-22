@@ -2,7 +2,7 @@
   "id": "7597bb61-04b5-46dd-80f5-7d812ac0c2c8",
   "name": "Robosol Order Cancellation",
   "publisher": "Robosol",
-  "version": "24.0.0.8",
+  "version": "24.0.0.9",
   "brief": "",
   "description": "",
   "privacyStatement": "",
@@ -15,13 +15,13 @@
       "id": "89b2d3ff-cff9-4506-9a14-597a5b6d370f",
       "name": "Interim WMS BC Customisation",
       "publisher": "Robosol",
-      "version": "24.0.0.56"
+      "version": "24.0.0.57"
     },
     {
       "id": "5b6c6c41-8944-489c-8020-627e5ff808d3",
       "name": "Knapp Integration",
       "publisher": "Robosol",
-      "version": "24.0.0.17"
+      "version": "24.0.0.18"
     }
   ],
   "screenshots": [],
