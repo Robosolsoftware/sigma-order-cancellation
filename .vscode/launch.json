@@ -6,7 +6,7 @@
             "request": "launch",
             "type": "al",
             "environmentType": "Sandbox",
-            "environmentName": "Copy_01082024",
+            "environmentName": "SIGCONNECT_DEV",
             //"environmentName": "KNAPP_DEV",
             "tenant": "55614040-8b3d-41a1-bae8-2140b06bd0c3",
             "startupObjectId": 22,

@@ -73,7 +73,8 @@ pageextension 70706 SalesOrdSub extends "Sales Order Subform"
             group("Cancel Sales Order")
             {
                 Caption = 'Cancel Sales Order';
-                Visible = VisibleonCancel;
+                //Visible = VisibleonCancel;
+                Visible = false;
                 action("Cancel Line")
                 {
                     ToolTip = 'Cancel the selected row';

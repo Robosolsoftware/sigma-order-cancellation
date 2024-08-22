@@ -63,7 +63,8 @@ pageextension 70701 CancelSOOrder extends "Sales Order"
             group("Cancel Sales Order")
             {
                 Caption = 'Cancel Sales Order';
-                Visible = VisibleonCancel;
+                //Visible = VisibleonCancel;
+                Visible = false;
                 action("Cancel Order")
                 {
                     ToolTip = 'Cancel Sales Order';

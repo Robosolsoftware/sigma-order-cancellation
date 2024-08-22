@@ -41,6 +41,7 @@ report 70703 "Cancel Back Sales Order"
                 L_SalesHeader.CalcFields("Drop/Special Order", "Special Order");
                 L_SalesHeader.SetRange("Drop/Special Order", false); //Drop Shipment Order
                 L_SalesHeader.SetRange("Special Order", false); //Special Order
+                L_SalesHeader.SetRange("IRP Order", true);
                 if L_SalesHeader.FindSet() then begin
                     repeat
                         Clear(L_ErrorFound);
