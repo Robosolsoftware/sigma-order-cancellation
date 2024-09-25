@@ -41,7 +41,7 @@ report 70703 "Cancel Back Sales Order"
                 L_SalesHeader.CalcFields("Drop/Special Order", "Special Order");
                 L_SalesHeader.SetRange("Drop/Special Order", false); //Drop Shipment Order
                 L_SalesHeader.SetRange("Special Order", false); //Special Order
-                L_SalesHeader.SetRange("IRP Order", true);
+                //L_SalesHeader.SetRange("IRP Order", true);
                 if L_SalesHeader.FindSet() then begin
                     repeat
                         Clear(L_ErrorFound);
@@ -112,18 +112,25 @@ report 70703 "Cancel Back Sales Order"
                         //If Knapp Order Response is Available then do not cancel/delete the Sales Order
                         if L_ErrorFound = false then begin
                             Clear(L_ErrorText);
-                            L_SalesShipmentHeader.Reset();
-                            L_SalesShipmentHeader.SetRange("Order No.", L_SalesHeader."No.");
-                            if not L_SalesShipmentHeader.FindFirst() then begin
-                                L_KnappOrderResponse.Reset();
-                                L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
-                                L_KnappOrderResponse.SetRange("Document No.", L_SalesHeader."No.");
-                                if L_KnappOrderResponse.FindFirst() then begin
-                                    L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
-                                    InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
-                                    L_ErrorFound := true;
-                                end;
+                            L_SalesHeader.CalcFields("Knapp Response Available", Shipped);
+                            if (L_SalesHeader."Knapp Order" = true) AND (L_SalesHeader."Knapp Response Available" = true) AND (L_SalesHeader.Shipped = false) then begin
+                                L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
+                                InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                L_ErrorFound := true;
                             end;
+                            // Clear(L_ErrorText);
+                            // L_SalesShipmentHeader.Reset();
+                            // L_SalesShipmentHeader.SetRange("Order No.", L_SalesHeader."No.");
+                            // if not L_SalesShipmentHeader.FindFirst() then begin
+                            //     L_KnappOrderResponse.Reset();
+                            //     L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
+                            //     L_KnappOrderResponse.SetRange("Document No.", L_SalesHeader."No.");
+                            //     if L_KnappOrderResponse.FindFirst() then begin
+                            //         L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
+                            //         InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                            //         L_ErrorFound := true;
+                            //     end;
+                            // end;
                         end;
 
                         //If Variant is available on Sales Line but that variant is not there in Item Variant List then don't delete the Order.
@@ -379,7 +386,6 @@ report 70703 "Cancel Back Sales Order"
             Commit();
         end;
     end;
-
 
     var
         StartDate: DateFormula;

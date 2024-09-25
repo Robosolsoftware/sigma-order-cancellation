@@ -1,4 +1,4 @@
-// pageextension 70711 "ROC Sales Order List" extends "Sales Order List"
+// pageextension 70712 "ROC Sales Order List" extends "Sales Order List"
 // {
 //     layout
 //     {
@@ -8,9 +8,15 @@
 //             {
 //                 ApplicationArea = All;
 //                 Editable = false;
-//                 Visible = VisibleOnCancel;
+//                 //Visible = VisibleOnCancel;
+//                 Visible = false;
 //             }
 //         }
+//     }
+
+//     actions
+//     {
+
 //     }
 
 //     var
