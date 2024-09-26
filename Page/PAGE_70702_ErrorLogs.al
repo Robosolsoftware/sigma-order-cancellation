@@ -13,8 +13,9 @@ page 70702 "Error Logs"
         {
             repeater(General)
             {
-                field("Document Type"; Rec."Document Type")
+                field("Order Type"; Rec."Order Type")
                 {
+                    Caption = 'Document Type';
                     ApplicationArea = All;
                 }
                 field("Document No."; Rec."Document No.")

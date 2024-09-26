@@ -355,6 +355,7 @@ report 70703 "Cancel Back Sales Order"
         G_ErrorBuff."Created Date" := Today;
         G_ErrorBuff."Document No." := SalesHeader."No.";
         G_ErrorBuff."Document Type" := SalesHeader."Document Type";
+        G_ErrorBuff."Order Type" := G_ErrorBuff."Order Type"::"Sales Order";
         G_ErrorBuff.Insert();
 
         L_SalesHeader.Reset();

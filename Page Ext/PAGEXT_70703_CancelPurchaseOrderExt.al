@@ -76,13 +76,15 @@ pageextension 70703 CancelPO extends "Purchase Order"
             group("Cancel Purchase Order")
             {
                 Caption = 'Cancel Purchase Order';
-                Visible = VisibleonCancel;
+                //Visible = VisibleonCancel;
+                Visible = false;
                 action("Cancel Order")
                 {
                     ToolTip = 'Cancel purchase Order';
                     Image = Cancel;
                     ApplicationArea = All;
-                    Visible = VisibleonCancel;
+                    //Visible = VisibleonCancel;
+                    Visible = false;
                     trigger OnAction()
                     var
                         L_PurchLine: Record "Purchase Line";
@@ -227,8 +229,10 @@ pageextension 70703 CancelPO extends "Purchase Order"
             group(Category_Category77)
             {
                 Caption = 'Cancel Purchase Order';
+                Visible = false;
                 actionref(CancelOrder; "Cancel Order")
                 {
+                    Visible = false;
                 }
             }
         }

@@ -28,6 +28,13 @@ table 70701 "Error Log"
         {
 
         }
+        field(6; "Order Type"; Option)
+        {
+            DataClassification = ToBeClassified;
+            OptionMembers = "Sales Order","Purchase Order";
+        }
+
+
     }
     keys
     {

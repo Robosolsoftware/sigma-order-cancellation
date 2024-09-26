@@ -42,6 +42,49 @@ pageextension 70705 POLists extends "Purchase Order List"
                 end;
             end;
         }
+
+        addafter("O&rder")
+        {
+            group("Cancel Purchase Order")
+            {
+                Caption = 'Cancel Purchase Order';
+                Visible = VisibleonCancel;
+
+                action("Cancel Order")
+                {
+                    ToolTip = 'Cancel purchase Order';
+                    Image = Cancel;
+                    ApplicationArea = All;
+                    Visible = VisibleonCancel;
+
+                    trigger OnAction()
+                    var
+                        L_PurchaseHeader: Record "Purchase Header";
+                        PurchaseAndPayableSetup: Record "Purchases & Payables Setup";
+                        REP_CancelPurchaseOrder: Report "Cancel Purchase Order";
+                    begin
+                        //Check Setup++
+                        PurchaseAndPayableSetup.Get();
+                        if PurchaseAndPayableSetup."Cancel Purchase Order Feature" = false then
+                            Error('Enable Cancel Purchase order feature on Purchase & Payables setup to unlock this feature');
+
+
+                        //Confimation Box++
+                        if not Confirm('Do you want to cancel this order?', false) then
+                            exit;
+
+                        Clear(REP_CancelPurchaseOrder);
+                        L_PurchaseHeader.Reset();
+                        CurrPage.SetSelectionFilter(L_PurchaseHeader);
+                        if L_PurchaseHeader.FindSet() then begin
+                            REP_CancelPurchaseOrder.SetTableView(L_PurchaseHeader);
+                            REP_CancelPurchaseOrder.Run();
+                        end;
+
+                    end;
+                }
+            }
+        }
     }
 
     trigger OnOpenPage()
