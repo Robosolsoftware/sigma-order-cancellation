@@ -41,201 +41,205 @@ report 70703 "Cancel Back Sales Order"
                 L_SalesHeader.CalcFields("Drop/Special Order", "Special Order");
                 L_SalesHeader.SetRange("Drop/Special Order", false); //Drop Shipment Order
                 L_SalesHeader.SetRange("Special Order", false); //Special Order
-                L_SalesHeader.SetRange("IRP Order", true);
+                //L_SalesHeader.SetRange("IRP Order", true);
                 if L_SalesHeader.FindSet() then begin
                     repeat
-                        Clear(L_ErrorFound);
-                        Clear(L_ErrorText);
+                        if (UpperCase(GetUserName(L_SalesHeader.SystemCreatedBy)) <> UpperCase('SIM')) AND (UpperCase(GetUserName(L_SalesHeader.SystemCreatedBy)) <> UpperCase('LISA')) then begin
 
-                        //Delete Error logs++
-                        Clear(L_ErrorFound);
-                        L_ErrorBuff.Reset();
-                        L_ErrorBuff.SetRange("Document Type", L_SalesHeader."Document Type");
-                        L_ErrorBuff.SetRange("Document No.", L_SalesHeader."No.");
-                        if L_ErrorBuff.FindSet() then
-                            L_ErrorBuff.DeleteAll();
 
-                        //For 1st Error++
-                        if L_ErrorFound = false then begin
-                            if (L_SalesHeader.Status <> L_SalesHeader.Status::Open) AND (L_SalesHeader.Status <> L_SalesHeader.Status::Released) then begin
-                                L_ErrorText := StrSubstNo('Status should not be %1', L_SalesHeader.Status);
-                                InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
-                                L_ErrorFound := true;
-                            end;
-                        end;
-
-                        //For 2nd Error++
-                        if L_ErrorFound = false then begin
-                            //Chcek Warehouse Shipment exists +++
+                            Clear(L_ErrorFound);
                             Clear(L_ErrorText);
-                            WareShipLine.Reset();
-                            WareShipLine.SetRange("Source Document", WareShipLine."Source Document"::"Sales Order");
-                            WareShipLine.SetRange("Source No.", L_SalesHeader."No.");
-                            if WareShipLine.FindFirst() then begin
-                                L_ErrorText := StrSubstNo('Unable to process ... Warehouse shipment %1 exist for Order No.: %2 Line No.: %3', WareShipLine."No.", WareShipLine."Source No.", WareShipLine."Source Line No.");
-                                InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
-                                L_ErrorFound := true;
+
+                            //Delete Error logs++
+                            Clear(L_ErrorFound);
+                            L_ErrorBuff.Reset();
+                            L_ErrorBuff.SetRange("Document Type", L_SalesHeader."Document Type");
+                            L_ErrorBuff.SetRange("Document No.", L_SalesHeader."No.");
+                            if L_ErrorBuff.FindSet() then
+                                L_ErrorBuff.DeleteAll();
+
+                            //For 1st Error++
+                            if L_ErrorFound = false then begin
+                                if (L_SalesHeader.Status <> L_SalesHeader.Status::Open) AND (L_SalesHeader.Status <> L_SalesHeader.Status::Released) then begin
+                                    L_ErrorText := StrSubstNo('Status should not be %1', L_SalesHeader.Status);
+                                    InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                    L_ErrorFound := true;
+                                end;
                             end;
-                        end;
 
-                        //For 3nd Error++
-                        if L_ErrorFound = false then begin
-                            //Check Inve Pick++
-                            Clear(L_ErrorText);
-                            L_WarehouseActivityHeader.Reset();
-                            L_WarehouseActivityHeader.SetRange(Type, L_WarehouseActivityHeader.Type::"Invt. Pick");
-                            L_WarehouseActivityHeader.SetRange("Source Document", L_WarehouseActivityHeader."Source Document"::"Sales Order");
-                            L_WarehouseActivityHeader.SetRange("Source No.", L_SalesHeader."No.");
-                            if L_WarehouseActivityHeader.FindFirst() then begin
-                                L_ErrorText := StrSubstNo('Unable to process ... Inventory Pick %1 exist for Order No.: %2', L_WarehouseActivityHeader."No.", L_WarehouseActivityHeader."Source No.");
-                                InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
-                                L_ErrorFound := true;
+                            //For 2nd Error++
+                            if L_ErrorFound = false then begin
+                                //Chcek Warehouse Shipment exists +++
+                                Clear(L_ErrorText);
+                                WareShipLine.Reset();
+                                WareShipLine.SetRange("Source Document", WareShipLine."Source Document"::"Sales Order");
+                                WareShipLine.SetRange("Source No.", L_SalesHeader."No.");
+                                if WareShipLine.FindFirst() then begin
+                                    L_ErrorText := StrSubstNo('Unable to process ... Warehouse shipment %1 exist for Order No.: %2 Line No.: %3', WareShipLine."No.", WareShipLine."Source No.", WareShipLine."Source Line No.");
+                                    InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                    L_ErrorFound := true;
+                                end;
                             end;
-                        end;
 
-                        //For 4rd Error++
-                        if L_ErrorFound = false then begin
-                            Clear(L_ErrorText);
-                            L_SalesLine.Reset();
-                            L_SalesLine.SetRange("Document Type", L_SalesHeader."Document Type"::Order);
-                            L_SalesLine.SetRange("Document No.", L_SalesHeader."No.");
-                            L_SalesLine.SetFilter(Type, '%1|%2', L_SalesLine.Type::Item, L_SalesLine.Type::"G/L Account");
-                            L_SalesLine.SetRange(Cancelled, false);
-                            L_SalesLine.SetFilter("Qty. Shipped Not Invoiced", '>%1', 0);
-                            if L_SalesLine.FindFirst() then begin
-                                L_ErrorText := StrSubstNo('Total %1 quantity shipped but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_SalesLine."Quantity Shipped", L_SalesLine."Quantity Invoiced", L_SalesLine."Document No.", L_SalesLine."Line No.");
-                                InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
-                                L_ErrorFound := true;
+                            //For 3nd Error++
+                            if L_ErrorFound = false then begin
+                                //Check Inve Pick++
+                                Clear(L_ErrorText);
+                                L_WarehouseActivityHeader.Reset();
+                                L_WarehouseActivityHeader.SetRange(Type, L_WarehouseActivityHeader.Type::"Invt. Pick");
+                                L_WarehouseActivityHeader.SetRange("Source Document", L_WarehouseActivityHeader."Source Document"::"Sales Order");
+                                L_WarehouseActivityHeader.SetRange("Source No.", L_SalesHeader."No.");
+                                if L_WarehouseActivityHeader.FindFirst() then begin
+                                    L_ErrorText := StrSubstNo('Unable to process ... Inventory Pick %1 exist for Order No.: %2', L_WarehouseActivityHeader."No.", L_WarehouseActivityHeader."Source No.");
+                                    InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                    L_ErrorFound := true;
+                                end;
                             end;
-                        end;
 
-                        //If Knapp Order Response is Available then do not cancel/delete the Sales Order
-                        if L_ErrorFound = false then begin
-                            Clear(L_ErrorText);
-                            L_SalesHeader.CalcFields("Knapp Response Available", Shipped);
-                            if (L_SalesHeader."Knapp Order" = true) AND (L_SalesHeader."Knapp Response Available" = true) AND (L_SalesHeader.Shipped = false) then begin
-                                L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
-                                InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
-                                L_ErrorFound := true;
+                            //For 4rd Error++
+                            if L_ErrorFound = false then begin
+                                Clear(L_ErrorText);
+                                L_SalesLine.Reset();
+                                L_SalesLine.SetRange("Document Type", L_SalesHeader."Document Type"::Order);
+                                L_SalesLine.SetRange("Document No.", L_SalesHeader."No.");
+                                L_SalesLine.SetFilter(Type, '%1|%2', L_SalesLine.Type::Item, L_SalesLine.Type::"G/L Account");
+                                L_SalesLine.SetRange(Cancelled, false);
+                                L_SalesLine.SetFilter("Qty. Shipped Not Invoiced", '>%1', 0);
+                                if L_SalesLine.FindFirst() then begin
+                                    L_ErrorText := StrSubstNo('Total %1 quantity shipped but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_SalesLine."Quantity Shipped", L_SalesLine."Quantity Invoiced", L_SalesLine."Document No.", L_SalesLine."Line No.");
+                                    InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                    L_ErrorFound := true;
+                                end;
                             end;
-                            // Clear(L_ErrorText);
-                            // L_SalesShipmentHeader.Reset();
-                            // L_SalesShipmentHeader.SetRange("Order No.", L_SalesHeader."No.");
-                            // if not L_SalesShipmentHeader.FindFirst() then begin
-                            //     L_KnappOrderResponse.Reset();
-                            //     L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
-                            //     L_KnappOrderResponse.SetRange("Document No.", L_SalesHeader."No.");
-                            //     if L_KnappOrderResponse.FindFirst() then begin
-                            //         L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
-                            //         InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
-                            //         L_ErrorFound := true;
-                            //     end;
-                            // end;
-                        end;
 
-                        //If Variant is available on Sales Line but that variant is not there in Item Variant List then don't delete the Order.
-                        if L_ErrorFound = false then begin
-                            Clear(L_ErrorText);
-                            L_SalesLine.Reset();
-                            L_SalesLine.SetRange("Document Type", L_SalesHeader."Document Type"::Order);
-                            L_SalesLine.SetRange("Document No.", L_SalesHeader."No.");
-                            L_SalesLine.SetFilter(Type, '%1', L_SalesLine.Type::Item);
-                            L_SalesLine.SetFilter("Variant Code", '<>%1', '');
-                            L_SalesLine.SetRange(Cancelled, false);
-                            if L_SalesLine.FindSet() then begin
-                                repeat
-                                    L_ItemVariant.Reset();
-                                    L_ItemVariant.SetRange("Item No.", L_SalesLine."No.");
-                                    L_ItemVariant.SetFilter(Code, '%1', L_SalesLine."Variant Code");
-                                    if not L_ItemVariant.FindFirst() then begin
-                                        L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as Item %2 that has Variant %3 is not available in Item Variant.', L_SalesLine."Document No.", L_SalesLine."No.", L_SalesLine."Variant Code");
-                                        InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
-                                        L_ErrorFound := true;
-                                    end;
-                                until L_SalesLine.Next() = 0;
+                            //If Knapp Order Response is Available then do not cancel/delete the Sales Order
+                            if L_ErrorFound = false then begin
+                                Clear(L_ErrorText);
+                                L_SalesHeader.CalcFields("Knapp Response Available", Shipped);
+                                if (L_SalesHeader."Knapp Order" = true) AND (L_SalesHeader."Knapp Response Available" = true) AND (L_SalesHeader.Shipped = false) then begin
+                                    L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
+                                    InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                    L_ErrorFound := true;
+                                end;
+                                // Clear(L_ErrorText);
+                                // L_SalesShipmentHeader.Reset();
+                                // L_SalesShipmentHeader.SetRange("Order No.", L_SalesHeader."No.");
+                                // if not L_SalesShipmentHeader.FindFirst() then begin
+                                //     L_KnappOrderResponse.Reset();
+                                //     L_KnappOrderResponse.SetRange("Document Type", L_KnappOrderResponse."Document Type"::Order);
+                                //     L_KnappOrderResponse.SetRange("Document No.", L_SalesHeader."No.");
+                                //     if L_KnappOrderResponse.FindFirst() then begin
+                                //         L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as it has Knapp Order Responses against it.', L_SalesHeader."No.");
+                                //         InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                //         L_ErrorFound := true;
+                                //     end;
+                                // end;
                             end;
-                        end;
 
-                        //Run Cancel Process++
-                        if L_ErrorFound = false then begin
-                            //Check Status++
-                            if L_SalesHeader.Status = L_SalesHeader.Status::Released then
-                                ReleaseDoc.PerformManualReopen(L_SalesHeader);
-                            L_SalesHeader.TestField(Status, L_SalesHeader.Status::Open);
-
-                            L_SalesLine.Reset();
-                            L_SalesLine.SetRange("Document Type", L_SalesHeader."Document Type");
-                            L_SalesLine.SetRange("Document No.", L_SalesHeader."No.");
-                            L_SalesLine.SetFilter(Type, '%1|%2', L_SalesLine.Type::Item, L_SalesLine.Type::"G/L Account");
-                            L_SalesLine.SetRange(Cancelled, false);
-                            if L_SalesLine.FindSet() then begin
-                                repeat
-                                    //Update Sales Line++
-                                    if L_SalesLine.Type = L_SalesLine.Type::Item then begin
-                                        //Delete Remaining Reservation Entries.
-                                        DeleteReservationEntries(L_SalesLine);
-
-                                        Clear(VariantCOde);
-                                        Clear(OriginalQty);
-                                        Clear(OriginalUnitPrice);
-                                        VariantCOde := L_SalesLine."Variant Code";
-                                        OriginalQty := L_SalesLine.Quantity;
-                                        OriginalUnitPrice := L_SalesLine."Unit Price";
-
-                                        L_SalesLine.Validate(Quantity, L_SalesLine."Quantity Shipped");
-                                        L_SalesLine.Validate("Original Order Quantity", OriginalQty);
-                                        L_SalesLine.Validate("Unit Price", OriginalUnitPrice);
-                                        if VariantCOde <> '' then begin
-                                            L_SalesLine."Variant Code" := VariantCOde;
-                                            L_SalesLine.Validate("Variant Code");
+                            //If Variant is available on Sales Line but that variant is not there in Item Variant List then don't delete the Order.
+                            if L_ErrorFound = false then begin
+                                Clear(L_ErrorText);
+                                L_SalesLine.Reset();
+                                L_SalesLine.SetRange("Document Type", L_SalesHeader."Document Type"::Order);
+                                L_SalesLine.SetRange("Document No.", L_SalesHeader."No.");
+                                L_SalesLine.SetFilter(Type, '%1', L_SalesLine.Type::Item);
+                                L_SalesLine.SetFilter("Variant Code", '<>%1', '');
+                                L_SalesLine.SetRange(Cancelled, false);
+                                if L_SalesLine.FindSet() then begin
+                                    repeat
+                                        L_ItemVariant.Reset();
+                                        L_ItemVariant.SetRange("Item No.", L_SalesLine."No.");
+                                        L_ItemVariant.SetFilter(Code, '%1', L_SalesLine."Variant Code");
+                                        if not L_ItemVariant.FindFirst() then begin
+                                            L_ErrorText := StrSubstNo('Not able to Cancel/Delete Order %1 as Item %2 that has Variant %3 is not available in Item Variant.', L_SalesLine."Document No.", L_SalesLine."No.", L_SalesLine."Variant Code");
+                                            InsertErrorLogCanceledOrder(L_SalesHeader, L_ErrorText);
+                                            L_ErrorFound := true;
                                         end;
-                                        L_SalesLine.Cancelled := true;
-                                        L_SalesLine."Cancelled By" := UserId;
-                                        L_SalesLine."Cancelled Date" := Today;
-                                        L_SalesLine."Completely Shipped" := true; //Prathamesh++
-                                        L_SalesLine.Validate("Cancel Reason code", ReturnReasonCode);
-                                        L_SalesLine.Modify();
-                                    end else
-                                        if L_SalesLine.Type = L_SalesLine.Type::"G/L Account" then begin
+                                    until L_SalesLine.Next() = 0;
+                                end;
+                            end;
+
+                            //Run Cancel Process++
+                            if L_ErrorFound = false then begin
+                                //Check Status++
+                                if L_SalesHeader.Status = L_SalesHeader.Status::Released then
+                                    ReleaseDoc.PerformManualReopen(L_SalesHeader);
+                                L_SalesHeader.TestField(Status, L_SalesHeader.Status::Open);
+
+                                L_SalesLine.Reset();
+                                L_SalesLine.SetRange("Document Type", L_SalesHeader."Document Type");
+                                L_SalesLine.SetRange("Document No.", L_SalesHeader."No.");
+                                L_SalesLine.SetFilter(Type, '%1|%2', L_SalesLine.Type::Item, L_SalesLine.Type::"G/L Account");
+                                L_SalesLine.SetRange(Cancelled, false);
+                                if L_SalesLine.FindSet() then begin
+                                    repeat
+                                        //Update Sales Line++
+                                        if L_SalesLine.Type = L_SalesLine.Type::Item then begin
+                                            //Delete Remaining Reservation Entries.
+                                            DeleteReservationEntries(L_SalesLine);
+
+                                            Clear(VariantCOde);
                                             Clear(OriginalQty);
                                             Clear(OriginalUnitPrice);
+                                            VariantCOde := L_SalesLine."Variant Code";
                                             OriginalQty := L_SalesLine.Quantity;
                                             OriginalUnitPrice := L_SalesLine."Unit Price";
 
                                             L_SalesLine.Validate(Quantity, L_SalesLine."Quantity Shipped");
                                             L_SalesLine.Validate("Original Order Quantity", OriginalQty);
                                             L_SalesLine.Validate("Unit Price", OriginalUnitPrice);
+                                            if VariantCOde <> '' then begin
+                                                L_SalesLine."Variant Code" := VariantCOde;
+                                                L_SalesLine.Validate("Variant Code");
+                                            end;
                                             L_SalesLine.Cancelled := true;
                                             L_SalesLine."Cancelled By" := UserId;
                                             L_SalesLine."Cancelled Date" := Today;
                                             L_SalesLine."Completely Shipped" := true; //Prathamesh++
                                             L_SalesLine.Validate("Cancel Reason code", ReturnReasonCode);
                                             L_SalesLine.Modify();
-                                        end;
-                                until L_SalesLine.Next() = 0;
-                            end;
+                                        end else
+                                            if L_SalesLine.Type = L_SalesLine.Type::"G/L Account" then begin
+                                                Clear(OriginalQty);
+                                                Clear(OriginalUnitPrice);
+                                                OriginalQty := L_SalesLine.Quantity;
+                                                OriginalUnitPrice := L_SalesLine."Unit Price";
 
-                            //Update Header++
-                            L_SalesLine.Reset();
-                            L_SalesLine.SetRange("Document Type", L_SalesHeader."Document Type");
-                            L_SalesLine.SetRange("Document No.", L_SalesHeader."No.");
-                            L_SalesLine.SetFilter(Type, '%1|%2', L_SalesLine.Type::Item, L_SalesLine.Type::"G/L Account");
-                            L_SalesLine.SetRange(Cancelled, false);
-                            if not L_SalesLine.FindFirst() then begin
-                                Delete_SalesHeader.Reset();
-                                if Delete_SalesHeader.Get(L_SalesHeader."Document Type"::Order, L_SalesHeader."No.") then begin
-                                    Delete_SalesHeader.Cancel := true;
-                                    Delete_SalesHeader."Cancelled By" := UserId;
-                                    Delete_SalesHeader."Cancelled Date" := Today;
-                                    Delete_SalesHeader.Modify();
+                                                L_SalesLine.Validate(Quantity, L_SalesLine."Quantity Shipped");
+                                                L_SalesLine.Validate("Original Order Quantity", OriginalQty);
+                                                L_SalesLine.Validate("Unit Price", OriginalUnitPrice);
+                                                L_SalesLine.Cancelled := true;
+                                                L_SalesLine."Cancelled By" := UserId;
+                                                L_SalesLine."Cancelled Date" := Today;
+                                                L_SalesLine."Completely Shipped" := true; //Prathamesh++
+                                                L_SalesLine.Validate("Cancel Reason code", ReturnReasonCode);
+                                                L_SalesLine.Modify();
+                                            end;
+                                    until L_SalesLine.Next() = 0;
+                                end;
 
-                                    //ReleaseDoc.PerformManualRelease(Delete_SalesHeader); //Prathamesh++
+                                //Update Header++
+                                L_SalesLine.Reset();
+                                L_SalesLine.SetRange("Document Type", L_SalesHeader."Document Type");
+                                L_SalesLine.SetRange("Document No.", L_SalesHeader."No.");
+                                L_SalesLine.SetFilter(Type, '%1|%2', L_SalesLine.Type::Item, L_SalesLine.Type::"G/L Account");
+                                L_SalesLine.SetRange(Cancelled, false);
+                                if not L_SalesLine.FindFirst() then begin
+                                    Delete_SalesHeader.Reset();
+                                    if Delete_SalesHeader.Get(L_SalesHeader."Document Type"::Order, L_SalesHeader."No.") then begin
+                                        Delete_SalesHeader.Cancel := true;
+                                        Delete_SalesHeader."Cancelled By" := UserId;
+                                        Delete_SalesHeader."Cancelled Date" := Today;
+                                        Delete_SalesHeader.Modify();
 
-                                    // //Send Canceled Order to Archive++
-                                    // ArchiveManagement.StoreSalesDocument(Delete_SalesHeader, false);
+                                        //ReleaseDoc.PerformManualRelease(Delete_SalesHeader); //Prathamesh++
 
-                                    //Delete Order++
-                                    DeleteSalesHeader(Delete_SalesHeader);
+                                        // //Send Canceled Order to Archive++
+                                        // ArchiveManagement.StoreSalesDocument(Delete_SalesHeader, false);
+
+                                        //Delete Order++
+                                        DeleteSalesHeader(Delete_SalesHeader);
+                                    end;
                                 end;
                             end;
                         end;
@@ -386,6 +390,16 @@ report 70703 "Cancel Back Sales Order"
             L_SalesHeader.Delete(true);
             Commit();
         end;
+    end;
+
+    procedure GetUserName(UserSecurityId: Code[50]): Text[100]
+    var
+        Users: Record User;
+    begin
+        Users.Reset();
+        Users.SetRange("User Security ID", UserSecurityId);
+        if Users.FindFirst() then
+            exit(Users."User Name");
     end;
 
     var

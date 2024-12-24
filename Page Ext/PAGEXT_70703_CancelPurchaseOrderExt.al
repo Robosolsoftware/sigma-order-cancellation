@@ -63,9 +63,7 @@ pageextension 70703 CancelPO extends "Purchase Order"
                 L_PurchLine.SetRange(Type, L_PurchLine.Type::Item);
                 if L_PurchLine.FindSet() then begin
                     repeat
-                        if L_PurchLine."PO Cancelled" = false then//New changes
-                            L_PurchLine.Validate("Original Order Quantity", L_PurchLine.Quantity);
-                        //L_PurchLine.Validate("Original Price", L_PurchLine."Unit Price (LCY)");
+                        L_PurchLine.Validate("Original Order Quantity", L_PurchLine.Quantity);
                         L_PurchLine.Modify();
                     until L_PurchLine.Next() = 0;
                 end;
@@ -76,15 +74,13 @@ pageextension 70703 CancelPO extends "Purchase Order"
             group("Cancel Purchase Order")
             {
                 Caption = 'Cancel Purchase Order';
-                //Visible = VisibleonCancel;
-                Visible = false;
+                Visible = VisibleonCancel;
                 action("Cancel Order")
                 {
                     ToolTip = 'Cancel purchase Order';
                     Image = Cancel;
                     ApplicationArea = All;
-                    //Visible = VisibleonCancel;
-                    Visible = false;
+                    Visible = VisibleonCancel;
                     trigger OnAction()
                     var
                         L_PurchLine: Record "Purchase Line";
@@ -229,10 +225,9 @@ pageextension 70703 CancelPO extends "Purchase Order"
             group(Category_Category77)
             {
                 Caption = 'Cancel Purchase Order';
-                Visible = false;
                 actionref(CancelOrder; "Cancel Order")
                 {
-                    Visible = false;
+
                 }
             }
         }
