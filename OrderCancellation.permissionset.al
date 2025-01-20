@@ -7,5 +7,6 @@ permissionset 70700 OrderCancellation
         codeunit ValidationOnCancelOrder = X,
         page "Cancel Order Setup" = X,
         page "Error Logs" = X,
-        report "Cancel Purchase Order" = X;
+        report "Cancel Purchase Order" = X,
+        report "Cancel Non-IRP Orders" = X;
 }
