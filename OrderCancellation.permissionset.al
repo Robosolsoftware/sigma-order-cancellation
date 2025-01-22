@@ -8,5 +8,6 @@ permissionset 70700 OrderCancellation
         page "Cancel Order Setup" = X,
         page "Error Logs" = X,
         report "Cancel Purchase Order" = X,
-        report "Cancel Non-IRP Orders" = X;
+        report "Cancel Non-IRP Orders" = X,
+        report "Delete Inventory Picks" = X;
 }
