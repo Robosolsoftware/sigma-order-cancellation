@@ -145,8 +145,8 @@ pageextension 70703 CancelPO extends "Purchase Order"
                                     Error('Unable to process ... Warehouse putaway No. %1 exists: in Purchase Line Document Type= %2,Document No.= %3,Line No.=%4', TakeWhseActvityLine."No.", L_PurchLine."Document Type", L_PurchLine."Document No.", L_PurchLine."Line No.");
 
                                 //Check Invoice Quantity++   
-                                if L_PurchLine."Qty. Rcd. Not Invoiced" > 0 then
-                                    Error('Total %1 quantity received but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_PurchLine."Quantity Received", L_PurchLine."Quantity Invoiced", L_PurchLine."Document No.", L_PurchLine."Line No.");
+                                // if L_PurchLine."Qty. Rcd. Not Invoiced" > 0 then //SBB-301
+                                //   Error('Total %1 quantity received but invoiced quantity %2.Invoice is pending for Order No. : %3 Line No. : %4 ', L_PurchLine."Quantity Received", L_PurchLine."Quantity Invoiced", L_PurchLine."Document No.", L_PurchLine."Line No.");
 
                                 if L_PurchLine.Type = L_PurchLine.Type::Item then begin
                                     //Delete Reservation++
