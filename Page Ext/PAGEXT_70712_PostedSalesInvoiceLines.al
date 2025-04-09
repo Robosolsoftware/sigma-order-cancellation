@@ -7,11 +7,7 @@ pageextension 70712 PostedSalesInvoiceLines extends "Posted Sales Invoice Lines"
             field("Original Order Quantity"; Rec."Original Order Quantity")
             {
                 ApplicationArea = all;
-
             }
-
-
-
         }
     }
     actions
