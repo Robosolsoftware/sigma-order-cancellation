@@ -42,11 +42,10 @@ report 70703 "Cancel Back Sales Order"
                 L_SalesHeader.SetRange("Drop/Special Order", false); //Drop Shipment Order
                 L_SalesHeader.SetRange("Special Order", false); //Special Order
                 L_SalesHeader.SetRange("IRP Order", true);
-                L_SalesHeader.SetRange(Hospital, false);
                 if L_SalesHeader.FindSet() then begin
                     repeat
-                        if (UpperCase(GetUserName(L_SalesHeader.SystemCreatedBy)) <> UpperCase('SIM')) AND (UpperCase(GetUserName(L_SalesHeader.SystemCreatedBy)) <> UpperCase('LISA')) then begin
-
+                        //if (UpperCase(GetUserName(L_SalesHeader.SystemCreatedBy)) <> UpperCase('SIM')) AND (UpperCase(GetUserName(L_SalesHeader.SystemCreatedBy)) <> UpperCase('LISA')) then begin
+                        if (L_SalesHeader."Order Category" <> L_SalesHeader."Order Category"::Hospital) AND (L_SalesHeader."Order Category" <> L_SalesHeader."Order Category"::Export) then begin
 
                             Clear(L_ErrorFound);
                             Clear(L_ErrorText);
